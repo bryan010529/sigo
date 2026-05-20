@@ -3,14 +3,14 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import type { Usuario } from '../types';
 
-export async function fetchUsuario(userId: string): Promise<{ usuario: Usuario | null; errorMsg: string | null }> {
+export async function fetchUsuario(userId: string): Promise<Usuario | null> {
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')
     .eq('id', userId)
     .single();
-  if (error) return { usuario: null, errorMsg: `${error.code}: ${error.message}` };
-  return { usuario: data as Usuario, errorMsg: null };
+  if (error) return null;
+  return data as Usuario;
 }
 
 export function useAuth() {
