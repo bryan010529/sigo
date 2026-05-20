@@ -63,6 +63,18 @@ body {
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
+  /* INTRANT palette — makes text-navy, bg-navy, bg-intrant-orange etc. work */
+  --color-navy: #1a3a5c;
+  --color-navy-dark: #0f2540;
+  --color-navy-light: #2a5a8c;
+  --color-intrant-orange: #e8541a;
+  --color-intrant-green: #27ae60;
+  --color-intrant-yellow: #f39c12;
+  --color-intrant-red: #e74c3c;
+  --color-intrant-light: #f4f6f9;
+  --color-intrant-border: #dde3eb;
+  --color-intrant-text: #2c3e50;
+  --color-intrant-muted: #6c7a8d;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
