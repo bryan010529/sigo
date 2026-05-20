@@ -1,50 +1,109 @@
-# React + TypeScript + Vite
+# SIGO — Sistema de Gestión Operacional
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**INTRANT · Dirección de Movilidad Sostenible · Gran Santo Domingo**
 
-Currently, two official plugins are available:
+Sistema web para registrar, validar y analizar los informes de operación semanal de los Corredores Interoperables del SITPSD. Reemplaza el proceso manual de PDF/Excel con un flujo digital completo: ingreso de datos, cálculo automático de indicadores, flujo de aprobación por roles y generación del informe oficial INTRANT.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## Stack Tecnológico
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | React 18 + Vite + TypeScript |
+| Estilos | Tailwind CSS v4 + shadcn/ui |
+| Routing | React Router v6 |
+| Estado | Zustand |
+| Backend / DB | Supabase (PostgreSQL) |
+| Auth | Supabase Auth |
+| Charts | Recharts |
+| Export PDF | @react-pdf/renderer |
+| Export Excel | xlsx (SheetJS) |
+| Hosting | Vercel |
 
-- Configure the top-level `parserOptions` property like this:
+---
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Roles de Usuario
+
+| Rol | Descripción |
+|-----|-------------|
+| `admin` | Control total del sistema |
+| `digitador` | Ingresa y carga datos semanales |
+| `supervisor` | Valida y firma semanas |
+| `analista` | Solo lectura: dashboard y reportes |
+
+---
+
+## Setup Local
+
+### Prerequisitos
+- Node.js 18+
+- Cuenta de Supabase con el proyecto configurado
+
+### Instalación
+
+```bash
+git clone https://github.com/bryan010529/sigo.git
+cd sigo
+npm install
+cp .env.local.example .env.local
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Editar `.env.local` con las credenciales de Supabase:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```env
+VITE_SUPABASE_URL=https://[project-id].supabase.co
+VITE_SUPABASE_ANON_KEY=[anon-key]
 ```
+
+```bash
+npm run dev
+```
+
+La aplicación estará disponible en `http://localhost:5173`.
+
+### Build de producción
+
+```bash
+npm run build
+```
+
+---
+
+## Variables de Entorno
+
+| Variable | Descripción | Requerida |
+|----------|-------------|-----------|
+| `VITE_SUPABASE_URL` | URL del proyecto Supabase | Sí |
+| `VITE_SUPABASE_ANON_KEY` | Clave anónima de Supabase | Sí |
+
+---
+
+## Estructura del Proyecto
+
+```
+src/
+├── components/     # Componentes reutilizables por módulo
+│   ├── layout/     # Sidebar, TopBar, Layout
+│   ├── ui/         # shadcn/ui components
+│   ├── semanas/    # SemanaCard, EstadoBadge
+│   ├── registro/   # Tablas, formularios, ImportModal
+│   ├── dashboard/  # KpiCards, Charts
+│   └── reportes/   # InformePDF, ExportExcel
+├── pages/          # Páginas: Login, Dashboard, Registro, etc.
+├── hooks/          # Custom hooks de Supabase
+├── store/          # Zustand: authStore, registroStore
+├── lib/            # supabase.ts, formulas.ts, dateUtils.ts, utils.ts
+└── types/          # Tipos TypeScript de todas las entidades
+```
+
+---
+
+## Documentación
+
+El PRD completo está en `PRD_SITPSD_Corredores.md`.
+El diseño del scaffold está en `docs/superpowers/specs/2026-05-19-sigo-scaffold-design.md`.
+
+---
+
+*SIGO v1.0 · Mayo 2026 · INTRANT*
