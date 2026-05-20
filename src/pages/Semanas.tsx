@@ -18,12 +18,16 @@ export default function Semanas() {
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
   const [filtroEstado, setFiltroEstado] = useState<EstadoSemana | ''>('');
+  const [filtroNumero, setFiltroNumero] = useState<number | ''>('');
+  const [filtroPeriodo, setFiltroPeriodo] = useState<number | ''>('');
   const [rechazandoId, setRechazandoId] = useState<string | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState('');
   const [actionError, setActionError] = useState('');
 
-  const { semanas, loading, error, enviarARevision, aprobar, rechazar, eliminar } = useSemanas({
+  const { semanas, loading, error, enviarARevision, aprobar, rechazar, eliminar, publicar } = useSemanas({
     estado: filtroEstado,
+    numero_semana: filtroNumero || undefined,
+    periodo: filtroPeriodo || undefined,
   });
 
   async function handleRechazar() {
@@ -62,11 +66,19 @@ export default function Semanas() {
     }
   }
 
+  async function handlePublicar(id: string) {
+    try {
+      await publicar(id);
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : 'Error al publicar');
+    }
+  }
+
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={filtroEstado}
             onChange={e => setFiltroEstado(e.target.value as EstadoSemana | '')}
@@ -77,6 +89,34 @@ export default function Semanas() {
               <option key={e.value} value={e.value}>{e.label}</option>
             ))}
           </select>
+
+          <input
+            type="number"
+            placeholder="Semana #"
+            value={filtroNumero}
+            onChange={e => setFiltroNumero(e.target.value ? parseInt(e.target.value) : '')}
+            className="text-sm rounded-lg px-3 py-2 outline-none w-28"
+            style={{ border: '1px solid var(--border)', color: 'var(--text)', backgroundColor: 'white' }}
+          />
+
+          <input
+            type="number"
+            placeholder="Período"
+            value={filtroPeriodo}
+            onChange={e => setFiltroPeriodo(e.target.value ? parseInt(e.target.value) : '')}
+            className="text-sm rounded-lg px-3 py-2 outline-none w-28"
+            style={{ border: '1px solid var(--border)', color: 'var(--text)', backgroundColor: 'white' }}
+          />
+
+          {(filtroEstado || filtroNumero || filtroPeriodo) && (
+            <button
+              onClick={() => { setFiltroEstado(''); setFiltroNumero(''); setFiltroPeriodo(''); }}
+              className="text-sm px-3 py-2 rounded-lg"
+              style={{ color: 'var(--muted)' }}
+            >
+              Limpiar
+            </button>
+          )}
         </div>
 
         {(usuario?.rol === 'admin' || usuario?.rol === 'digitador') && (
@@ -133,6 +173,7 @@ export default function Semanas() {
             onAprobar={handleAprobar}
             onRechazar={id => { setRechazandoId(id); setMotivoRechazo(''); }}
             onEliminar={handleEliminar}
+            onPublicar={handlePublicar}
           />
         ))}
       </div>

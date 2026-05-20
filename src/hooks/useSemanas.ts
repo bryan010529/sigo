@@ -5,6 +5,8 @@ import { useAuthStore } from '../store/authStore';
 
 interface FiltrosSemanas {
   estado?: EstadoSemana | '';
+  numero_semana?: number | '';
+  periodo?: number | '';
   corredor_id?: string;
 }
 
@@ -17,6 +19,7 @@ interface UseSemanas {
   aprobar: (id: string) => Promise<void>;
   rechazar: (id: string, comentario: string) => Promise<void>;
   eliminar: (id: string) => Promise<void>;
+  publicar: (id: string) => Promise<void>;
 }
 
 export function useSemanas(filtros: FiltrosSemanas = {}): UseSemanas {
@@ -37,13 +40,19 @@ export function useSemanas(filtros: FiltrosSemanas = {}): UseSemanas {
     if (filtros.estado) {
       query = query.eq('estado', filtros.estado);
     }
+    if (filtros.numero_semana) {
+      query = query.eq('numero_semana', filtros.numero_semana);
+    }
+    if (filtros.periodo) {
+      query = query.eq('periodo', filtros.periodo);
+    }
 
     query.then(({ data, error: err }) => {
       setLoading(false);
       if (err) { setError(err.message); return; }
       setSemanas((data || []) as Semana[]);
     });
-  }, [filtros.estado]);
+  }, [filtros.estado, filtros.numero_semana, filtros.periodo]);
 
   useEffect(() => { refetch(); }, [refetch]);
 
@@ -87,5 +96,14 @@ export function useSemanas(filtros: FiltrosSemanas = {}): UseSemanas {
     refetch();
   }
 
-  return { semanas, loading, error, refetch, enviarARevision, aprobar, rechazar, eliminar };
+  async function publicar(id: string) {
+    const { error: err } = await supabase
+      .from('semanas')
+      .update({ estado: 'publicado' })
+      .eq('id', id);
+    if (err) throw new Error(err.message);
+    refetch();
+  }
+
+  return { semanas, loading, error, refetch, enviarARevision, aprobar, rechazar, eliminar, publicar };
 }

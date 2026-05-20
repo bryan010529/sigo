@@ -10,9 +10,17 @@ interface Props {
   onAprobar: (id: string) => void;
   onRechazar: (id: string) => void;
   onEliminar: (id: string) => void;
+  onPublicar: (id: string) => void;
 }
 
-export default function SemanaCard({ semana, onEnviar, onAprobar, onRechazar, onEliminar }: Props) {
+export default function SemanaCard({
+  semana,
+  onEnviar,
+  onAprobar,
+  onRechazar,
+  onEliminar,
+  onPublicar,
+}: Props) {
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
   const rol = usuario?.rol;
@@ -109,6 +117,17 @@ export default function SemanaCard({ semana, onEnviar, onAprobar, onRechazar, on
             style={{ backgroundColor: '#fef2f2', color: 'var(--red)', border: '1px solid #fecaca' }}
           >
             <XCircle size={13} /> Rechazar
+          </button>
+        )}
+
+        {/* Publicar — solo admin en validado */}
+        {rol === 'admin' && semana.estado === 'validado' && (
+          <button
+            onClick={() => onPublicar(semana.id)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-80"
+            style={{ backgroundColor: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd' }}
+          >
+            Publicar
           </button>
         )}
 
