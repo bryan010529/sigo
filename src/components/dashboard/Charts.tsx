@@ -10,10 +10,18 @@ const CORREDOR_COLORS = ['#1a3a5c', '#e8541a', '#27ae60', '#f39c12'];
 interface Props {
   icsChart: ChartPoint[];
   pasajerosChart: ChartPoint[];
+  kmsChart: ChartPoint[];
+  serviciosChart: ChartPoint[];
   corredores: string[];
 }
 
-export default function Charts({ icsChart, pasajerosChart, corredores }: Props) {
+function numFmt(v: number | string | readonly (string | number)[] | undefined): [string, string] {
+  if (v == null) return ['0', ''];
+  const n = Array.isArray(v) ? v[0] : v;
+  return [Number(n).toLocaleString('es-DO'), ''];
+}
+
+export default function Charts({ icsChart, pasajerosChart, kmsChart, serviciosChart, corredores }: Props) {
   if (!icsChart.length) {
     return (
       <div
@@ -28,10 +36,7 @@ export default function Charts({ icsChart, pasajerosChart, corredores }: Props) 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* ICS por semana */}
-      <div
-        className="bg-white rounded-xl p-5"
-        style={{ border: '1px solid var(--border)' }}
-      >
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
         <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>
           ICS por Semana
         </h3>
@@ -40,13 +45,7 @@ export default function Charts({ icsChart, pasajerosChart, corredores }: Props) 
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="semana" tick={{ fontSize: 11 }} />
             <YAxis domain={[60, 100]} tick={{ fontSize: 11 }} unit="%" />
-            <Tooltip
-              formatter={(v?: number | string | readonly (string | number)[]) => {
-                if (!v) return ['0%', ''];
-                const value = Array.isArray(v) ? v[0] : v;
-                return [`${Number(value)}%`, ''];
-              }}
-            />
+            <Tooltip formatter={(v) => { const val = Array.isArray(v) ? v[0] : v; return [`${Number(val)}%`, '']; }} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {corredores.map((corredor, i) => (
               <Line
@@ -64,10 +63,7 @@ export default function Charts({ icsChart, pasajerosChart, corredores }: Props) 
       </div>
 
       {/* Pasajeros por semana */}
-      <div
-        className="bg-white rounded-xl p-5"
-        style={{ border: '1px solid var(--border)' }}
-      >
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
         <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>
           Pasajeros por Semana
         </h3>
@@ -76,22 +72,47 @@ export default function Charts({ icsChart, pasajerosChart, corredores }: Props) 
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="semana" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
-            <Tooltip
-              formatter={(v?: number | string | readonly (string | number)[]) => {
-                if (!v) return ['0', ''];
-                const value = Array.isArray(v) ? v[0] : v;
-                return [Number(value).toLocaleString('es-DO'), ''];
-              }}
-            />
+            <Tooltip formatter={numFmt} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {corredores.map((corredor, i) => (
-              <Bar
-                key={corredor}
-                dataKey={corredor}
-                fill={CORREDOR_COLORS[i % CORREDOR_COLORS.length]}
-                radius={[3, 3, 0, 0]}
-              />
+              <Bar key={corredor} dataKey={corredor} fill={CORREDOR_COLORS[i % CORREDOR_COLORS.length]} radius={[3, 3, 0, 0]} />
             ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Kms Programados vs Ejecutados */}
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>
+          Kms Programados vs Ejecutados
+        </h3>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={kmsChart} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="semana" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} />
+            <Tooltip formatter={numFmt} />
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Bar dataKey="Prog." fill="#1a3a5c" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="Ejec." fill="#e8541a" radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Servicios Programados vs Ejecutados */}
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>
+          Servicios Programados vs Ejecutados
+        </h3>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={serviciosChart} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="semana" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} />
+            <Tooltip formatter={numFmt} />
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Bar dataKey="Prog." fill="#1a3a5c" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="Ejec." fill="#27ae60" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
