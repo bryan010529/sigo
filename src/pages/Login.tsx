@@ -29,10 +29,10 @@ export default function Login() {
     }
 
     // Fetch del perfil inmediatamente con la sesión ya establecida
-    const perfil = await fetchUsuario(authData.user.id);
+    const { usuario: perfil, errorMsg } = await fetchUsuario(authData.user.id);
     if (!perfil) {
       setLoading(false);
-      setError('Perfil no encontrado. Contacta al administrador del sistema.');
+      setError(`Perfil no encontrado. Error: ${errorMsg ?? 'desconocido'}`);
       return;
     }
 
