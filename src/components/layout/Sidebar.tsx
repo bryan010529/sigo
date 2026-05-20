@@ -52,7 +52,12 @@ const ROL_LABELS: Record<Rol, string> = {
   analista: 'Analista',
 };
 
-export default function Sidebar() {
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ open, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
 
@@ -67,7 +72,12 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="flex flex-col h-screen w-60 shrink-0"
+      className={`
+        flex flex-col h-screen w-60 shrink-0
+        fixed md:relative z-30 md:z-auto
+        transition-transform duration-300 ease-in-out
+        ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}
       style={{ backgroundColor: 'var(--navy)', color: 'white' }}
     >
       {/* Logo */}
@@ -114,6 +124,7 @@ export default function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive ? 'text-white' : 'hover:bg-white/10'
@@ -136,6 +147,7 @@ export default function Sidebar() {
         <div className="px-3 py-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
           <NavLink
             to="/configuracion"
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive ? 'text-white' : 'hover:bg-white/10'
