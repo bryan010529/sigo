@@ -11,6 +11,9 @@ export default function Layout() {
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
+        <footer className="shrink-0 px-6 py-2 text-center text-xs border-t" style={{ color: 'var(--muted)', borderColor: 'var(--border)' }}>
+          Powered by <span className="font-medium" style={{ color: 'var(--navy)' }}>IT Soluclick SRL</span>
+        </footer>
       </div>
     </div>
   );
