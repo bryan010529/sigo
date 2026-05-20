@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SITPSD – Informe Operacional de Corredores</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy:#1a3a5c; --navy-dark:#0f2540; --navy-light:#2a5a8c;
+  --orange:#e8541a; --light:#f4f6f9; --border:#dde3eb;
+  --text:#2c3e50; --muted:#6c7a8d;
+  --green:#27ae60; --red:#e74c3c; --yellow:#f39c12; --blue:#2980b9;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--light);color:var(--text);font-size:14px;}
+
+/* ── Header ── */
+.hdr{background:var(--navy);color:#fff;padding:12px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+.hdr-logo{background:var(--orange);color:#fff;font-weight:800;font-size:13px;padding:6px 10px;border-radius:6px;letter-spacing:1px;}
+.hdr-text h1{font-size:15px;font-weight:700;}
+.hdr-text p{font-size:11px;color:#8ab4d8;margin-top:2px;}
+.hdr-spacer{flex:1;}
+.hdr-week{text-align:right;}
+.hdr-week span{font-size:11px;color:#8ab4d8;}
+.hdr-week strong{font-size:13px;color:#fff;display:block;}
+
+/* ── Nav ── */
+.nav{background:var(--navy-dark);display:flex;padding:0 24px;overflow-x:auto;}
+.nav-tab{color:#7aa8cc;padding:11px 18px;cursor:pointer;font-size:13px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap;transition:.15s;}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,.06);}
+.nav-tab.active{color:#fff;border-bottom-color:var(--orange);}
+
+/* ── Layout ── */
+.main{padding:22px;max-width:1500px;margin:0 auto;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+
+/* ── Cards ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.card-hdr{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.card-hdr .icon{background:var(--navy);color:#fff;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* ── Form ── */
+.form-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+.fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:150px;}
+.fg.wide{flex:2;}
+.fg label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.fg input,.fg select,.fg textarea{padding:8px 11px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:#fff;transition:border .15s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--navy);}
+
+/* ── Buttons ── */
+.btn{padding:9px 18px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--navy);color:#fff;}.btn-primary:hover{background:var(--navy-dark);}
+.btn-success{background:var(--green);color:#fff;}.btn-success:hover{background:#1e8449;}
+.btn-danger{background:var(--red);color:#fff;}.btn-danger:hover{background:#c0392b;}
+.btn-outline{background:transparent;border:1.5px solid var(--navy);color:var(--navy);}.btn-outline:hover{background:var(--navy);color:#fff;}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-orange{background:var(--orange);color:#fff;}.btn-orange:hover{background:#cf4615;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+/* ── Corredor pills ── */
+.corr-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.corr-pill{padding:6px 16px;border:2px solid var(--navy);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--navy);transition:.15s;}
+.corr-pill.active{background:var(--navy);color:#fff;}
+.corr-pill:hover{background:var(--navy);color:#fff;}
+
+/* ── Data Tables ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{background:var(--navy);color:#fff;padding:8px 9px;text-align:center;font-weight:600;white-space:nowrap;}
+thead th.grp{background:var(--navy-light);font-size:11px;}
+tbody td{padding:6px 7px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+tbody tr:hover td{background:#f0f5ff;}
+tbody tr.total-row td{background:#eef2fa;font-weight:700;color:var(--navy);border-top:2px solid var(--navy);}
+.num-input{width:88px;padding:5px 6px;border:1px solid #c8d4e0;border-radius:4px;font-size:12px;text-align:right;transition:border .15s;}
+.num-input:focus{outline:none;border-color:var(--navy);background:#eef4ff;}
+.auto-calc{background:#f0fff8;color:var(--green);font-weight:700;border-color:#9dd6b5;cursor:default;}
+.auto-calc:read-only{background:#f0fff8;}
+.date-lbl{font-weight:600;color:var(--navy);font-size:12px;white-space:nowrap;}
+.no-data{color:#bbb;font-style:italic;}
+
+/* ── Section labels ── */
+.sec-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--orange);margin:18px 0 10px;}
+.sec-info{background:#f0f5ff;border-left:3px solid var(--navy);padding:8px 12px;border-radius:4px;font-size:12px;color:var(--navy);margin-bottom:14px;}
+
+/* ── Week list cards ── */
+.week-item{border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:10px;background:#fff;display:flex;align-items:center;gap:16px;transition:.15s;}
+.week-item:hover{border-color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.week-num-badge{background:var(--navy);color:#fff;border-radius:8px;padding:10px 14px;text-align:center;min-width:68px;}
+.week-num-badge .wn{font-size:24px;font-weight:800;line-height:1;}
+.week-num-badge .wl{font-size:10px;color:#8ab4d8;margin-top:2px;}
+.week-meta{flex:1;}
+.week-meta h3{font-size:14px;font-weight:600;color:var(--navy);}
+.week-meta p{font-size:12px;color:var(--muted);margin-top:3px;}
+.week-kpi{text-align:center;min-width:72px;}
+.week-kpi .kv{font-size:22px;font-weight:800;}
+.week-kpi .kl{font-size:10px;color:var(--muted);margin-top:2px;}
+.ics-g{color:var(--green);}.ics-y{color:var(--yellow);}.ics-r{color:var(--red);}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
+.badge-g{background:#edfbf0;color:var(--green);}
+.badge-y{background:#fef9e7;color:var(--yellow);}
+.badge-r{background:#fdedec;color:var(--red);}
+
+/* ── Stats row ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;}
+.stat-card .sv{font-size:28px;font-weight:800;color:var(--navy);}
+.stat-card .sl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── Charts ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr;}}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty .ei{font-size:52px;margin-bottom:14px;}
+
+/* ── Alert ── */
+.alert{padding:11px 16px;border-radius:6px;margin-bottom:14px;font-size:13px;}
+.alert-ok{background:#edfbf0;border:1px solid #a8ddb8;color:#1e7e34;}
+.alert-err{background:#fdedec;border:1px solid #f5a9a0;color:#922b21;}
+.alert-info{background:#edf4fb;border:1px solid #a8c8e8;color:#1a5276;}
+
+/* ── Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;padding:28px;max-width:640px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.modal-hdr h2{font-size:16px;font-weight:700;color:var(--navy);}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;}
+
+/* ── Print ── */
+@media print{
+  .hdr,.nav,.btn,.btn-row,.corr-pills,.no-print{display:none!important;}
+  .card{box-shadow:none;border:none;padding:0;}
+  body{background:#fff;}
+  .print-section{page-break-inside:avoid;}
+  table{font-size:10px;}
+  .main{padding:0;}
+}
+
+/* ── Corredor config ── */
+.corr-list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff;}
+.corr-list-item .cn{flex:1;font-weight:600;font-size:13px;}
+.corr-list-item .cc{font-size:12px;color:var(--muted);}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--navy);}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="hdr">
+  <div class="hdr-logo">INTRANT</div>
+  <div class="hdr-text">
+    <h1>Sistema Integrado de Transporte Público del Gran Santo Domingo</h1>
+    <p>Informe de Operación Semanal – Corredores Interoperables</p>
+  </div>
+  <div class="hdr-spacer"></div>
+  <div class="hdr-week" id="hdrWeekInfo"><span>Semanas registradas</span><strong id="hdrWeekCount">–</strong></div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<div class="nav">
+  <div class="nav-tab active" onclick="showTab('registro')">📝 Nuevo Registro</div>
+  <div class="nav-tab" onclick="showTab('semanas')">📋 Semanas</div>
+  <div class="nav-tab" onclick="showTab('dashboard')">📊 Dashboard</div>
+  <div class="nav-tab" onclick="showTab('corredores')">🚌 Corredores</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     TAB 1 – NUEVO REGISTRO
+════════════════════════════════════════ -->
+<div class="main">
+<div id="tab-registro" class="tab-content active">
+
+  <div id="alertBox"></div>
+
+  <div class="card">
+    <div class="card-hdr"><div class="icon">📄</div> Datos de la Semana Operacional</div>
+    <div class="form-row">
+      <div class="fg"><label>Semana #</label><input type="number" id="fSemana" min="1" max="52" value="20" placeholder="Ej: 19"></div>
+      <div class="fg"><label>Período</label><input type="number" id="fPeriodo" min="1" max="26" value="20" placeholder="Ej: 19"></div>
+      <div class="fg"><label>Fecha Inicio</label><input type="date" id="fFechaIni" onchange="fillDates()"></div>
+      <div class="fg"><label>Fecha Fin</label><input type="date" id="fFechaFin" readonly style="background:#f8f9fa;"></div>
+      <div class="fg wide"><label>Validado por</label><input type="text" id="fValidado" value="Ing. Erick Marte – Dirección de Movilidad Sostenible"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg" style="flex:0 0 100%"><label>Observaciones</label><textarea id="fObs" rows="2" style="resize:vertical;" placeholder="Observaciones generales de la semana..."></textarea></div>
+    </div>
+  </div>
+
+  <!-- Corredor selector -->
+  <div class="card">
+    <div class="card-hdr"><div class="icon">🚌</div> Seleccionar Corredor a Registrar</div>
+    <div class="corr-pills" id="corrPills"></div>
+    <div class="sec-info" id="corrInfoBox">Selecciona un corredor arriba para ingresar sus datos operacionales.</div>
+  </div>
+
+  <!-- Data entry area -->
+  <div id="dataEntryArea" style="display:none;">
+
+    <!-- SECTION I -->
+    <div class="card print-section">
+      <div class="card-hdr"><div class="icon">I</div> Kilómetros y Servicios de Operación</div>
+      <div class="sec-info">Ingresa los valores directamente del sistema SIT. Los Kms Efectivos (Pago Operador) se usan para totales.</div>
+      <div class="tbl-wrap">
+        <table id="tblSecI">
+          <thead>
+            <tr>
+              <th rowspan="2" style="min-width:90px;">Fecha</th>
+              <th colspan="3" class="grp">Kilómetros</th>
+              <th rowspan="2">Total Pasajeros<br><small>Boletos Valid.</small></th>
+              <th colspan="3" class="grp">Servicios</th>
+            </tr>
+            <tr>
+              <th class="grp">Programados</th>
+              <th class="grp">Ejecutados</th>
+              <th class="grp">Efectivos<br><small>(Pago Op.)</small></th>
+              <th class="grp">Programados</th>
+              <th class="grp">Ejecutados</th>
+              <th class="grp">Puntuales</th>
+            </tr>
+          </thead>
+          <tbody id="tbodySecI"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION II -->
+    <div class="card print-section">
+      <div class="card-hdr"><div class="icon">II</div> Indicadores de Desempeño</div>
+      <div class="sec-info">
+        <b>IcA, IcK, IcD, IP</b> = Ingresar desde SIT (sistema fuente).
+        <b>IE</b> = Mantenimiento (default 90%).
+        <b>IC</b> e <b>ICS</b> = Se calculan automáticamente (fondo verde).
+      </div>
+      <div class="tbl-wrap">
+        <table id="tblSecII">
+          <thead>
+            <tr>
+              <th rowspan="2" style="min-width:90px;">Fecha</th>
+              <th rowspan="2">IcA<br><small>% Autob.</small></th>
+              <th rowspan="2">IcK<br><small>% Kms</small></th>
+              <th rowspan="2">IcD<br><small>% Desp.</small></th>
+              <th rowspan="2" style="background:#1e5e9e;">IC<br><small>Cumpl.</small></th>
+              <th rowspan="2">IP<br><small>Puntual.</small></th>
+              <th rowspan="2">IE<br><small>Manten.</small></th>
+              <th rowspan="2" style="background:#1e5e9e;">ICS<br><small>Calidad</small></th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tbody id="tbodySecII"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:20px;">
+      <button class="btn btn-success" onclick="saveCurrentCorredor()">💾 Guardar Corredor</button>
+      <button class="btn btn-outline" onclick="clearCurrentCorredor()">🗑 Limpiar</button>
+      <span id="savedCorrs" style="font-size:12px;color:var(--muted);"></span>
+    </div>
+
+  </div>
+
+  <!-- Save full week -->
+  <div class="card" id="saveWeekCard" style="display:none;">
+    <div class="card-hdr"><div class="icon">✅</div> Guardar Semana Completa</div>
+    <div id="corrSummary" class="sec-info" style="margin-bottom:14px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveWeek()">💾 Guardar Semana Operacional</button>
+    </div>
+  </div>
+
+</div><!-- /tab-registro -->
+
+<!-- ═══════════════════════════════════════
+     TAB 2 – SEMANAS
+════════════════════════════════════════ -->
+<div id="tab-semanas" class="tab-content">
+  <div class="card">
+    <div class="card-hdr"><div class="icon">📋</div> Semanas Operacionales Registradas</div>
+    <div id="semanasList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     TAB 3 – DASHBOARD
+════════════════════════════════════════ -->
+<div id="tab-dashboard" class="tab-content">
+  <div id="dashStats" class="stats-row"></div>
+  <div class="charts-grid">
+    <div class="card"><div class="card-hdr"><div class="icon">📈</div> ICS por Semana</div><canvas id="chartICS" height="220"></canvas></div>
+    <div class="card"><div class="card-hdr"><div class="icon">👥</div> Pasajeros por Semana</div><canvas id="chartPax" height="220"></canvas></div>
+    <div class="card"><div class="card-hdr"><div class="icon">🛣</div> Kms Programados vs Ejecutados</div><canvas id="chartKms" height="220"></canvas></div>
+    <div class="card"><div class="card-hdr"><div class="icon">🚌</div> Servicios Programados vs Ejecutados</div><canvas id="chartServ" height="220"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     TAB 4 – CORREDORES
+════════════════════════════════════════ -->
+<div id="tab-corredores" class="tab-content">
+  <div class="card">
+    <div class="card-hdr"><div class="icon">🚌</div> Gestión de Corredores</div>
+    <div class="form-row">
+      <div class="fg"><label>Código</label><input type="text" id="newCorrCod" placeholder="Ej: 107"></div>
+      <div class="fg wide"><label>Nombre del Corredor</label><input type="text" id="newCorrNom" placeholder="Ej: Corredor Lincoln"></div>
+      <div class="fg" style="justify-content:flex-end;padding-top:20px;">
+        <button class="btn btn-success" onclick="addCorredor()">+ Agregar Corredor</button>
+      </div>
+    </div>
+    <div id="corrListUI"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ═══ MODAL: VER SEMANA ═══ -->
+<div class="modal-overlay" id="modalSemana">
+  <div class="modal" style="max-width:900px;">
+    <div class="modal-hdr">
+      <h2 id="modalTitle">Semana Operacional</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="btn-row" style="margin-top:20px;">
+      <button class="btn btn-outline no-print" onclick="window.print()">🖨 Imprimir / PDF</button>
+      <button class="btn btn-danger btn-sm no-print" onclick="deleteSemanaFromModal()">🗑 Eliminar Semana</button>
+      <button class="btn btn-sm no-print" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA LAYER
+// ═══════════════════════════════════════════════════════
+const STORAGE_KEY = 'sitpsd_v1';
+let db = loadDB();
+let currentCorredorId = null;
+let draftData = {}; // { [corrId]: { secI: [], secII: [] } }
+let activeModalSemanaId = null;
+let charts = {};
+
+function loadDB(){
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultDB(); }
+  catch(e){ return defaultDB(); }
+}
+function saveDB(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+function defaultDB(){
+  return {
+    corredores: [
+      { id:'103', codigo:'103', nombre:'Corredor W. Churchill' },
+      { id:'105', codigo:'105', nombre:'Corredor W. Churchill Corto' }
+    ],
+    semanas: []
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showTab(t){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(t==='semanas') renderSemanas();
+  if(t==='dashboard') renderDashboard();
+  if(t==='corredores') renderCorredores();
+}
+
+// ═══════════════════════════════════════════════════════
+//  DATE HELPERS
+// ═══════════════════════════════════════════════════════
+const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTHS_ES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+function fillDates(){
+  const ini = document.getElementById('fFechaIni').value;
+  if(!ini) return;
+  const d = new Date(ini+'T12:00:00');
+  const fin = new Date(d); fin.setDate(fin.getDate()+6);
+  document.getElementById('fFechaFin').value = fin.toISOString().slice(0,10);
+  updateDataEntryDates();
+}
+
+function getDatesOfWeek(){
+  const ini = document.getElementById('fFechaIni').value;
+  if(!ini) return [];
+  const dates = [];
+  const d = new Date(ini+'T12:00:00');
+  for(let i=0;i<7;i++){
+    const dd = new Date(d); dd.setDate(dd.getDate()+i);
+    dates.push(dd.toISOString().slice(0,10));
+  }
+  return dates;
+}
+
+function fmtDate(isoStr){
+  if(!isoStr) return '';
+  const d = new Date(isoStr+'T12:00:00');
+  return `${String(d.getDate()).padStart(2,'0')}-${MONTHS_ES[d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
+}
+
+function fmtNum(n, dec=2){
+  if(n===null||n===undefined||n==='') return '–';
+  return Number(n).toLocaleString('es-DO',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+
+// ═══════════════════════════════════════════════════════
+//  CORREDOR PILLS & DATA ENTRY
+// ═══════════════════════════════════════════════════════
+function renderPills(){
+  const container = document.getElementById('corrPills');
+  container.innerHTML = '';
+  db.corredores.forEach(c=>{
+    const pill = document.createElement('div');
+    pill.className = 'corr-pill' + (currentCorredorId===c.id?' active':'');
+    const saved = draftData[c.id] ? ' ✓' : '';
+    pill.textContent = `${c.codigo} – ${c.nombre}${saved}`;
+    pill.onclick = ()=>selectCorredor(c.id);
+    container.appendChild(pill);
+  });
+}
+
+function selectCorredor(id){
+  // save current before switching
+  if(currentCorredorId && currentCorredorId!==id) autoSaveDraft();
+  currentCorredorId = id;
+  renderPills();
+  buildDataEntry(id);
+  document.getElementById('dataEntryArea').style.display='block';
+  const c = db.corredores.find(x=>x.id===id);
+  document.getElementById('corrInfoBox').textContent = `Corredor activo: ${c.codigo} – ${c.nombre}`;
+  updateSaveWeekCard();
+}
+
+function buildDataEntry(corrId){
+  const dates = getDatesOfWeek();
+  if(dates.length===0){
+    alert('Primero selecciona la fecha de inicio de la semana.');
+    return;
+  }
+  const draft = draftData[corrId] || { secI: dates.map(d=>({fecha:d,kp:'',ke:'',kef:'',pax:'',sp:'',se:'',spunt:''})), secII: dates.map(d=>({fecha:d,ica:'',ick:'',icd:'',ip:'',ie:'90'})) };
+  draftData[corrId] = draft;
+  buildSecI(draft.secI);
+  buildSecII(draft.secII);
+}
+
+function updateDataEntryDates(){
+  if(!currentCorredorId) return;
+  const dates = getDatesOfWeek();
+  dates.forEach((dt,i)=>{
+    const rowI = document.querySelector(`#tbodySecI tr:nth-child(${i+1})`);
+    const rowII = document.querySelector(`#tbodySecII tr:nth-child(${i+1})`);
+    if(rowI) rowI.cells[0].innerHTML=`<span class="date-lbl">${fmtDate(dt)}</span>`;
+    if(rowII) rowII.cells[0].innerHTML=`<span class="date-lbl">${fmtDate(dt)}</span>`;
+    if(draftData[currentCorredorId]){
+      draftData[currentCorredorId].secI[i].fecha = dt;
+      draftData[currentCorredorId].secII[i].fecha = dt;
+    }
+  });
+}
+
+function buildSecI(rows){
+  const tbody = document.getElementById('tbodySecI');
+  tbody.innerHTML='';
+  rows.forEach((r,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="date-lbl">${fmtDate(r.fecha)}</span></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.kp||''}" oninput="updateDraftI(${i},'kp',this.value);updateTotalsI()" placeholder="0.00"></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.ke||''}" oninput="updateDraftI(${i},'ke',this.value);updateTotalsI()" placeholder="0.00"></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.kef||''}" oninput="updateDraftI(${i},'kef',this.value);updateTotalsI()" placeholder="0.00"></td>
+      <td><input class="num-input" type="number" step="1" value="${r.pax||''}" oninput="updateDraftI(${i},'pax',this.value);updateTotalsI()" placeholder="0"></td>
+      <td><input class="num-input" type="number" step="1" value="${r.sp||''}" oninput="updateDraftI(${i},'sp',this.value);updateTotalsI()" placeholder="0"></td>
+      <td><input class="num-input" type="number" step="1" value="${r.se||''}" oninput="updateDraftI(${i},'se',this.value);updateTotalsI()" placeholder="0"></td>
+      <td><input class="num-input" type="number" step="1" value="${r.spunt||''}" oninput="updateDraftI(${i},'spunt',this.value);updateTotalsI()" placeholder="0"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  // Totals row
+  const tr = document.createElement('tr');
+  tr.className='total-row';
+  tr.id='totRowI';
+  tr.innerHTML='<td>TOTAL</td><td id="tKp">–</td><td id="tKe">–</td><td id="tKef">–</td><td id="tPax">–</td><td id="tSp">–</td><td id="tSe">–</td><td id="tSpunt">–</td>';
+  tbody.appendChild(tr);
+  updateTotalsI();
+}
+
+function buildSecII(rows){
+  const tbody = document.getElementById('tbodySecII');
+  tbody.innerHTML='';
+  rows.forEach((r,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="date-lbl">${fmtDate(r.fecha)}</span></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.ica||''}" oninput="updateDraftII(${i},'ica',this.value);calcIndicators(${i})" placeholder="0.00"></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.ick||''}" oninput="updateDraftII(${i},'ick',this.value);calcIndicators(${i})" placeholder="0.00"></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.icd||''}" oninput="updateDraftII(${i},'icd',this.value);calcIndicators(${i})" placeholder="0.00"></td>
+      <td><input class="num-input auto-calc" readonly type="number" id="ic_${i}" value="${r.ic||''}"></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.ip||''}" oninput="updateDraftII(${i},'ip',this.value);calcIndicators(${i})" placeholder="0.00"></td>
+      <td><input class="num-input" type="number" step="0.01" value="${r.ie||'90'}" oninput="updateDraftII(${i},'ie',this.value);calcIndicators(${i})"></td>
+      <td><input class="num-input auto-calc" readonly type="number" id="ics_${i}" value="${r.ics||''}"></td>
+    `;
+    tbody.appendChild(tr);
+    calcIndicators(i);
+  });
+  // Totals row
+  const tr = document.createElement('tr');
+  tr.className='total-row';
+  tr.id='totRowII';
+  tr.innerHTML='<td>TOTAL</td><td id="tIcA">–</td><td id="tIcK">–</td><td id="tIcD">–</td><td id="tIC" style="background:#d4edda;">–</td><td id="tIP">–</td><td id="tIE">–</td><td id="tICS" style="background:#d4edda;">–</td>';
+  tbody.appendChild(tr);
+  updateTotalsII();
+}
+
+function updateDraftI(i,field,val){
+  if(!currentCorredorId||!draftData[currentCorredorId]) return;
+  draftData[currentCorredorId].secI[i][field]=val;
+}
+function updateDraftII(i,field,val){
+  if(!currentCorredorId||!draftData[currentCorredorId]) return;
+  draftData[currentCorredorId].secII[i][field]=val;
+}
+
+function calcIndicators(i){
+  const r = draftData[currentCorredorId]?.secII[i];
+  if(!r) return;
+  const ica=parseFloat(r.ica)||0, ick=parseFloat(r.ick)||0, icd=parseFloat(r.icd)||0;
+  const ip=parseFloat(r.ip)||0, ie=parseFloat(r.ie)||0;
+  const ic = (ica>0||ick>0||icd>0) ? (ica+ick+icd)/3 : 0;
+  const ics = (ic>0||ip>0||ie>0) ? ic*0.5+ip*0.25+ie*0.25 : 0;
+  r.ic = ic>0?ic.toFixed(2):'';
+  r.ics = ics>0?ics.toFixed(2):'';
+  const icEl = document.getElementById(`ic_${i}`);
+  const icsEl = document.getElementById(`ics_${i}`);
+  if(icEl) icEl.value = ic>0?ic.toFixed(2):'';
+  if(icsEl) icsEl.value = ics>0?ics.toFixed(2):'';
+  updateTotalsII();
+}
+
+function sumField(rows, field){ return rows.reduce((a,r)=>a+(parseFloat(r[field])||0),0); }
+function avgField(rows, field){
+  const vals = rows.filter(r=>parseFloat(r[field])>0);
+  if(!vals.length) return null;
+  return vals.reduce((a,r)=>a+(parseFloat(r[field])||0),0)/vals.length;
+}
+
+function updateTotalsI(){
+  const rows = draftData[currentCorredorId]?.secI || [];
+  const set = (id,val,dec=2)=>{ const el=document.getElementById(id); if(el) el.textContent=val>0?fmtNum(val,dec):'–'; };
+  set('tKp',sumField(rows,'kp')); set('tKe',sumField(rows,'ke')); set('tKef',sumField(rows,'kef'));
+  set('tPax',sumField(rows,'pax'),0); set('tSp',sumField(rows,'sp'),0);
+  set('tSe',sumField(rows,'se'),0); set('tSpunt',sumField(rows,'spunt'),0);
+}
+
+function updateTotalsII(){
+  const rows = draftData[currentCorredorId]?.secII || [];
+  const setA = (id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val!==null?fmtNum(val,2)+'%':'–'; };
+  setA('tIcA',avgField(rows,'ica')); setA('tIcK',avgField(rows,'ick'));
+  setA('tIcD',avgField(rows,'icd')); setA('tIC',avgField(rows,'ic'));
+  setA('tIP',avgField(rows,'ip')); setA('tIE',avgField(rows,'ie'));
+  setA('tICS',avgField(rows,'ics'));
+}
+
+function autoSaveDraft(){
+  // values are already live in draftData via oninput
+}
+
+function saveCurrentCorredor(){
+  if(!currentCorredorId) return;
+  const draft = draftData[currentCorredorId];
+  if(!draft){showAlert('No hay datos para guardar.','err');return;}
+  // mark as saved (already in draftData)
+  showAlert(`Datos del corredor ${currentCorredorId} guardados en el borrador.`,'ok');
+  renderPills();
+  updateSaveWeekCard();
+}
+
+function clearCurrentCorredor(){
+  if(!currentCorredorId) return;
+  delete draftData[currentCorredorId];
+  buildDataEntry(currentCorredorId);
+  renderPills();
+  updateSaveWeekCard();
+}
+
+function updateSaveWeekCard(){
+  const card = document.getElementById('saveWeekCard');
+  const saved = Object.keys(draftData).filter(k=>draftData[k]);
+  if(saved.length>0){
+    card.style.display='block';
+    const names = saved.map(id=>{ const c=db.corredores.find(x=>x.id===id); return c?`${c.codigo} – ${c.nombre}`:id; });
+    document.getElementById('corrSummary').innerHTML = `<b>Corredores con datos listos:</b> ${names.join(', ')}`;
+  } else { card.style.display='none'; }
+}
+
+function saveWeek(){
+  const num = parseInt(document.getElementById('fSemana').value);
+  const per = parseInt(document.getElementById('fPeriodo').value);
+  const ini = document.getElementById('fFechaIni').value;
+  const fin = document.getElementById('fFechaFin').value;
+  if(!num||!ini){showAlert('Completa el número de semana y la fecha de inicio.','err');return;}
+  const saved = Object.keys(draftData).filter(k=>draftData[k]);
+  if(saved.length===0){showAlert('No hay datos de corredores para guardar.','err');return;}
+
+  const semana = {
+    id: Date.now().toString(),
+    numero: num, periodo: per,
+    fecha_inicio: ini, fecha_fin: fin,
+    validado: document.getElementById('fValidado').value,
+    observaciones: document.getElementById('fObs').value,
+    corredores: {}
+  };
+  saved.forEach(id=>{ semana.corredores[id] = JSON.parse(JSON.stringify(draftData[id])); });
+  db.semanas.push(semana);
+  saveDB();
+  updateHeaderCount();
+  showAlert(`Semana ${num} guardada correctamente con ${saved.length} corredor(es).`,'ok');
+  // Reset
+  draftData={};
+  renderPills();
+  updateSaveWeekCard();
+  document.getElementById('dataEntryArea').style.display='none';
+  currentCorredorId=null;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SEMANAS LIST
+// ═══════════════════════════════════════════════════════
+function renderSemanas(){
+  const container = document.getElementById('semanasList');
+  if(db.semanas.length===0){
+    container.innerHTML='<div class="empty"><div class="ei">📋</div><p>No hay semanas registradas aún.</p><p style="margin-top:8px;font-size:12px;">Ve a "Nuevo Registro" para agregar la primera.</p></div>';
+    return;
+  }
+  const sorted = [...db.semanas].sort((a,b)=>b.numero-a.numero);
+  container.innerHTML = sorted.map(s=>{
+    const ics = calcSemanaICS(s);
+    const icsClass = ics===null?'':ics>=80?'ics-g':ics>=70?'ics-y':'ics-r';
+    const icsText = ics===null?'–':ics.toFixed(1)+'%';
+    const corrs = Object.keys(s.corredores).map(id=>{
+      const c=db.corredores.find(x=>x.id===id); return c?`${c.codigo}`:id;
+    }).join(', ');
+    const pax = calcSemanaPax(s);
+    return `
+    <div class="week-item">
+      <div class="week-num-badge"><div class="wn">${s.numero}</div><div class="wl">Semana</div></div>
+      <div class="week-meta">
+        <h3>Período ${s.periodo} &nbsp;·&nbsp; ${fmtDate(s.fecha_inicio)} al ${fmtDate(s.fecha_fin)}</h3>
+        <p>Corredores: ${corrs} &nbsp;·&nbsp; ${Object.keys(s.corredores).length} corredor(es)</p>
+        <p style="margin-top:4px;">${pax>0?'👥 '+fmtNum(pax,0)+' pasajeros':''}</p>
+      </div>
+      <div class="week-kpi"><div class="kv ${icsClass}">${icsText}</div><div class="kl">ICS Prom.</div></div>
+      <div class="btn-row no-print">
+        <button class="btn btn-primary btn-sm" onclick="viewSemana('${s.id}')">👁 Ver</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSemana('${s.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calcSemanaICS(s){
+  let vals=[], cnt=0;
+  Object.values(s.corredores).forEach(c=>{
+    c.secII.forEach(r=>{ if(r.ics) vals.push(parseFloat(r.ics)); });
+  });
+  if(!vals.length) return null;
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+function calcSemanaPax(s){
+  let total=0;
+  Object.values(s.corredores).forEach(c=>{
+    c.secI.forEach(r=>total+=(parseFloat(r.pax)||0));
+  });
+  return total;
+}
+
+function deleteSemana(id){
+  if(!confirm('¿Eliminar esta semana operacional?')) return;
+  db.semanas = db.semanas.filter(s=>s.id!==id);
+  saveDB();
+  renderSemanas();
+  updateHeaderCount();
+}
+
+function deleteSemanaFromModal(){
+  if(!activeModalSemanaId) return;
+  deleteSemana(activeModalSemanaId);
+  closeModal();
+}
+
+// ═══════════════════════════════════════════════════════
+//  VIEW SEMANA MODAL
+// ═══════════════════════════════════════════════════════
+function viewSemana(id){
+  const s = db.semanas.find(x=>x.id===id);
+  if(!s) return;
+  activeModalSemanaId = id;
+  document.getElementById('modalTitle').textContent = `Semana Operacional ${s.numero} — Período ${s.periodo} (${fmtDate(s.fecha_inicio)} al ${fmtDate(s.fecha_fin)})`;
+  let html = `<div class="alert alert-info">Informe de Operación Semanal Corredores Interoperables — SISTEMA INTEGRADO DE TRANSPORTE PÚBLICO DEL GRAN SANTO DOMINGO</div>`;
+
+  Object.entries(s.corredores).forEach(([corrId, data])=>{
+    const corrObj = db.corredores.find(c=>c.id===corrId);
+    const corrName = corrObj ? `${corrObj.codigo} – ${corrObj.nombre}` : corrId;
+    html += `<div class="sec-label" style="margin-top:16px;">Corredor: ${corrName}</div>`;
+
+    // Section I
+    html += `<p style="font-size:12px;font-weight:600;color:var(--navy);margin:10px 0 6px;">I. Kilómetros y Servicios</p>`;
+    html += `<div class="tbl-wrap"><table><thead><tr>
+      <th>Fecha</th><th>Kms Prog.</th><th>Kms Ejec.</th><th>Kms Efect.</th>
+      <th>Pasajeros</th><th>Serv. Prog.</th><th>Serv. Ejec.</th><th>Serv. Punt.</th>
+    </tr></thead><tbody>`;
+    let [tkp,tke,tkef,tpax,tsp,tse,tspunt]=[0,0,0,0,0,0,0];
+    data.secI.forEach(r=>{
+      const kp=parseFloat(r.kp)||0,ke=parseFloat(r.ke)||0,kef=parseFloat(r.kef)||0;
+      const pax=parseFloat(r.pax)||0,sp=parseFloat(r.sp)||0,se=parseFloat(r.se)||0,spunt=parseFloat(r.spunt)||0;
+      tkp+=kp;tke+=ke;tkef+=kef;tpax+=pax;tsp+=sp;tse+=se;tspunt+=spunt;
+      const hasData = kp||ke||pax||sp;
+      html += `<tr><td class="date-lbl">${fmtDate(r.fecha)}</td>
+        <td>${kp?fmtNum(kp):'<span class="no-data">–</span>'}</td>
+        <td>${ke?fmtNum(ke):'<span class="no-data">–</span>'}</td>
+        <td>${kef?fmtNum(kef):'<span class="no-data">–</span>'}</td>
+        <td>${pax?fmtNum(pax,0):'<span class="no-data">–</span>'}</td>
+        <td>${sp?fmtNum(sp,0):'<span class="no-data">–</span>'}</td>
+        <td>${se?fmtNum(se,0):'<span class="no-data">–</span>'}</td>
+        <td>${spunt?fmtNum(spunt,0):'<span class="no-data">–</span>'}</td></tr>`;
+    });
+    html += `<tr class="total-row"><td>TOTAL SEMANA</td>
+      <td>${fmtNum(tkp)}</td><td>${fmtNum(tke)}</td><td>${fmtNum(tkef)}</td>
+      <td>${fmtNum(tpax,0)}</td><td>${fmtNum(tsp,0)}</td><td>${fmtNum(tse,0)}</td><td>${fmtNum(tspunt,0)}</td>
+    </tr></tbody></table></div>`;
+
+    // Section II
+    html += `<p style="font-size:12px;font-weight:600;color:var(--navy);margin:14px 0 6px;">II. Indicadores de Desempeño</p>`;
+    html += `<div class="tbl-wrap"><table><thead><tr>
+      <th>Fecha</th><th>IcA</th><th>IcK</th><th>IcD</th>
+      <th style="background:#1e5e9e;">IC</th><th>IP</th><th>IE</th><th style="background:#1e5e9e;">ICS</th>
+    </tr></thead><tbody>`;
+    let [sica,sick,sicd,sic,sip,sie,sics,cnt]=[0,0,0,0,0,0,0,0];
+    data.secII.forEach(r=>{
+      const ica=parseFloat(r.ica)||0,ick=parseFloat(r.ick)||0,icd=parseFloat(r.icd)||0;
+      const ic=parseFloat(r.ic)||0,ip=parseFloat(r.ip)||0,ie=parseFloat(r.ie)||0,ics=parseFloat(r.ics)||0;
+      if(ica||ick||icd){ sica+=ica;sick+=ick;sicd+=icd;sic+=ic;sip+=ip;sie+=ie;sics+=ics;cnt++; }
+      const fmt = v=>v?`${fmtNum(v)}%`:'<span class="no-data">–</span>';
+      html += `<tr><td class="date-lbl">${fmtDate(r.fecha)}</td>
+        <td>${fmt(ica)}</td><td>${fmt(ick)}</td><td>${fmt(icd)}</td>
+        <td style="background:#edf9f1;font-weight:700;">${fmt(ic)}</td>
+        <td>${fmt(ip)}</td><td>${fmt(ie)}</td>
+        <td style="background:#edf9f1;font-weight:700;">${ics?`<b>${fmtNum(ics)}%</b>`:'<span class="no-data">–</span>'}</td></tr>`;
+    });
+    if(cnt>0){
+      const avg=v=>fmtNum(v/cnt)+'%';
+      html += `<tr class="total-row"><td>TOTAL SEMANA</td>
+        <td>${avg(sica)}</td><td>${avg(sick)}</td><td>${avg(sicd)}</td>
+        <td>${avg(sic)}</td><td>${avg(sip)}</td><td>${avg(sie)}</td>
+        <td><b>${avg(sics)}</b></td></tr>`;
+    }
+    html += `</tbody></table></div>`;
+  });
+
+  // Observations & signature
+  if(s.observaciones) html += `<div class="alert alert-info" style="margin-top:16px;"><b>Observaciones:</b> ${s.observaciones}</div>`;
+  html += `<div style="text-align:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);">${s.validado||''}</div>`;
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalSemana').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modalSemana').classList.remove('open');
+  activeModalSemanaId=null;
+}
+
+// ═══════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDashboard(){
+  const sorted = [...db.semanas].sort((a,b)=>a.numero-b.numero);
+  // Stats
+  const totalPax = sorted.reduce((a,s)=>a+calcSemanaPax(s),0);
+  const allICS = sorted.map(s=>calcSemanaICS(s)).filter(v=>v!==null);
+  const avgICS = allICS.length ? allICS.reduce((a,b)=>a+b,0)/allICS.length : null;
+  const totalKms = sorted.reduce((a,s)=>{
+    let k=0; Object.values(s.corredores).forEach(c=>c.secI.forEach(r=>k+=parseFloat(r.kef)||0));
+    return a+k;
+  },0);
+
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><div class="sv">${sorted.length}</div><div class="sl">Semanas Registradas</div></div>
+    <div class="stat-card"><div class="sv">${db.corredores.length}</div><div class="sl">Corredores Activos</div></div>
+    <div class="stat-card"><div class="sv">${fmtNum(totalPax,0)}</div><div class="sl">Total Pasajeros</div></div>
+    <div class="stat-card"><div class="sv">${fmtNum(totalKms,0)}</div><div class="sl">Kms Efectivos Totales</div></div>
+    <div class="stat-card"><div class="sv ${avgICS?avgICS>=80?'ics-g':avgICS>=70?'ics-y':'ics-r':''}">${avgICS?avgICS.toFixed(1)+'%':'–'}</div><div class="sl">ICS Promedio Global</div></div>
+  `;
+
+  if(sorted.length===0){ return; }
+  const labels = sorted.map(s=>`Sem. ${s.numero}`);
+
+  // Chart ICS
+  const icsData = sorted.map(s=>{ const v=calcSemanaICS(s); return v?parseFloat(v.toFixed(2)):null; });
+  buildChart('chartICS','line',labels,icsData,'ICS %','rgba(39,174,96,.15)','#27ae60');
+
+  // Chart Pax
+  const paxData = sorted.map(s=>calcSemanaPax(s));
+  buildChart('chartPax','bar',labels,paxData,'Pasajeros','rgba(26,58,92,.15)','#1a3a5c');
+
+  // Chart Kms
+  const kmpData = sorted.map(s=>{ let k=0; Object.values(s.corredores).forEach(c=>c.secI.forEach(r=>k+=parseFloat(r.kp)||0)); return parseFloat(k.toFixed(2)); });
+  const kmeData = sorted.map(s=>{ let k=0; Object.values(s.corredores).forEach(c=>c.secI.forEach(r=>k+=parseFloat(r.ke)||0)); return parseFloat(k.toFixed(2)); });
+  buildChartTwo('chartKms',labels,kmpData,kmeData,'Kms Prog.','Kms Ejec.','#2980b9','#27ae60');
+
+  // Chart Services
+  const spData = sorted.map(s=>{ let k=0; Object.values(s.corredores).forEach(c=>c.secI.forEach(r=>k+=parseFloat(r.sp)||0)); return k; });
+  const seData = sorted.map(s=>{ let k=0; Object.values(s.corredores).forEach(c=>c.secI.forEach(r=>k+=parseFloat(r.se)||0)); return k; });
+  buildChartTwo('chartServ',labels,spData,seData,'Serv. Prog.','Serv. Ejec.','#8e44ad','#e8541a');
+}
+
+function buildChart(id,type,labels,data,label,bg,border){
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{
+    type,data:{labels,datasets:[{label,data,backgroundColor:bg,borderColor:border,borderWidth:2,fill:type==='line',tension:.3,pointBackgroundColor:border}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false,ticks:{font:{size:11}}}}}
+  });
+}
+function buildChartTwo(id,labels,d1,d2,l1,l2,c1,c2){
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:l1,data:d1,backgroundColor:c1+'44',borderColor:c1,borderWidth:1.5},
+      {label:l2,data:d2,backgroundColor:c2+'44',borderColor:c2,borderWidth:1.5}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,ticks:{font:{size:11}}}}}
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  CORREDORES MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function renderCorredores(){
+  const container = document.getElementById('corrListUI');
+  container.innerHTML = db.corredores.map(c=>`
+    <div class="corr-list-item">
+      <div class="dot"></div>
+      <div class="cn">${c.codigo} – ${c.nombre}</div>
+      <button class="btn btn-danger btn-sm" onclick="deleteCorredor('${c.id}')">🗑 Eliminar</button>
+    </div>
+  `).join('');
+}
+
+function addCorredor(){
+  const cod = document.getElementById('newCorrCod').value.trim();
+  const nom = document.getElementById('newCorrNom').value.trim();
+  if(!cod||!nom){alert('Ingresa código y nombre.');return;}
+  if(db.corredores.find(c=>c.id===cod)){alert('Ya existe ese código.');return;}
+  db.corredores.push({id:cod,codigo:cod,nombre:nom});
+  saveDB();
+  document.getElementById('newCorrCod').value='';
+  document.getElementById('newCorrNom').value='';
+  renderCorredores();
+  renderPills();
+}
+
+function deleteCorredor(id){
+  if(!confirm('¿Eliminar este corredor? Esto no afecta semanas ya guardadas.')) return;
+  db.corredores = db.corredores.filter(c=>c.id!==id);
+  saveDB();
+  renderCorredores();
+  renderPills();
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════
+function showAlert(msg, type='ok'){
+  const box = document.getElementById('alertBox');
+  const cls = type==='ok'?'alert-ok':type==='err'?'alert-err':'alert-info';
+  box.innerHTML=`<div class="alert ${cls}">${msg}</div>`;
+  setTimeout(()=>box.innerHTML='',4000);
+}
+
+function updateHeaderCount(){
+  document.getElementById('hdrWeekCount').textContent = db.semanas.length + ' registradas';
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+function init(){
+  // set default start date to next Monday
+  const today = new Date();
+  const monday = new Date(today);
+  const day = today.getDay();
+  const diff = day===0?1:(8-day)%7||7;
+  monday.setDate(today.getDate()+diff);
+  document.getElementById('fFechaIni').value = monday.toISOString().slice(0,10);
+  fillDates();
+  renderPills();
+  updateHeaderCount();
+}
+
+// click outside modal to close
+document.getElementById('modalSemana').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+init();
+</script>
+</body>
+</html>
