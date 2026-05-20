@@ -19,6 +19,7 @@ export interface Corredor {
   activo: boolean;
   orden: number;
   notas?: string;
+  costo_por_km?: number;
   created_at: string;
 }
 
