@@ -1,0 +1,48 @@
+import { useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/authStore';
+import type { Usuario } from '../types';
+
+async function fetchUsuario(userId: string): Promise<Usuario | null> {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (error) return null;
+  return data as Usuario;
+}
+
+export function useAuth() {
+  const { setUsuario, setLoading, reset } = useAuthStore();
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
+      if (session?.user) {
+        const usuario = await fetchUsuario(session.user.id);
+        if (mounted) setUsuario(usuario);
+      }
+      if (mounted) setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        if (event === 'SIGNED_IN' && session?.user) {
+          const usuario = await fetchUsuario(session.user.id);
+          setUsuario(usuario);
+        } else if (event === 'SIGNED_OUT') {
+          reset();
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [setUsuario, setLoading, reset]);
+}
