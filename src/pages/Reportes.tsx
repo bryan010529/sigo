@@ -139,11 +139,11 @@ export default function Reportes() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-xl font-bold text-navy">Reportes</h1>
+      <h1 className="text-xl font-bold text-navy" style={{ color: 'var(--navy)' }}>Reportes</h1>
 
       {/* Reporte 1 */}
       <div className="bg-white rounded-lg border p-6 max-w-2xl">
-        <h2 className="text-base font-semibold text-navy mb-1">Informe Semanal Oficial</h2>
+        <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Informe Semanal Oficial</h2>
         <p className="text-sm text-gray-500 mb-4">
           Formato oficial INTRANT / SITPSD con Sección I y Sección II por corredor.
         </p>
@@ -191,6 +191,7 @@ export default function Reportes() {
               onClick={descargarPDF}
               disabled={!semanaSeleccionada || loading || generando}
               className="bg-navy text-white hover:bg-navy-dark flex items-center gap-2"
+              style={{ backgroundColor: 'var(--navy)', color: 'white' }}
             >
               {generando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
               Descargar PDF
@@ -210,7 +211,7 @@ export default function Reportes() {
 
       {/* Reporte 2: Resumen Mensual */}
       <div className="bg-white rounded-lg border p-6 max-w-2xl">
-        <h2 className="text-base font-semibold text-navy mb-1">Resumen Mensual</h2>
+        <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Resumen Mensual</h2>
         <p className="text-sm text-gray-500 mb-4">
           Tabla consolidada de todas las semanas de un período. Exporta PDF y Excel.
         </p>
@@ -230,6 +231,7 @@ export default function Reportes() {
               onClick={() => setPeriodoResumenApplied(periodoResumen ? parseInt(periodoResumen) : null)}
               disabled={!periodoResumen}
               className="bg-navy text-white hover:bg-navy-dark"
+              style={{ backgroundColor: 'var(--navy)', color: 'white' }}
             >
               Buscar
             </Button>
@@ -249,10 +251,11 @@ export default function Reportes() {
 
           {resumen.filas.length > 0 && (
             <div className="flex gap-3">
-              <Button
+                <Button
                 onClick={descargarResumenPDF}
                 disabled={generandoResumen}
                 className="bg-navy text-white hover:bg-navy-dark flex items-center gap-2"
+                style={{ backgroundColor: 'var(--navy)', color: 'white' }}
               >
                 {generandoResumen ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
                 Descargar PDF
@@ -272,7 +275,7 @@ export default function Reportes() {
 
       {/* Reporte 3: Comparativo de Corredores */}
       <div className="bg-white rounded-lg border p-6 max-w-2xl">
-        <h2 className="text-base font-semibold text-navy mb-1">Comparativo de Corredores</h2>
+        <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Comparativo de Corredores</h2>
         <p className="text-sm text-gray-500">
           Indicadores promedio por corredor en un rango de semanas.
         </p>
@@ -301,6 +304,7 @@ export default function Reportes() {
               })}
               disabled={!compPeriodo || !compSemanaDesde || !compSemanaHasta}
               className="bg-navy text-white hover:bg-navy-dark"
+              style={{ backgroundColor: 'var(--navy)', color: 'white' }}
             >
               Buscar
             </Button>
@@ -318,7 +322,7 @@ export default function Reportes() {
               <ComparativoChart filas={comparativo.filas} />
               <div className="overflow-x-auto">
                 <table className="w-full text-xs border rounded">
-                  <thead className="bg-navy text-white">
+                  <thead className="bg-navy text-white" style={{ backgroundColor: 'var(--navy)', color: 'white' }}>
                     <tr>
                       {['Corredor','IcA','IcK','IcD','IC','IP','IE','ICS'].map(h => (
                         <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>
@@ -363,7 +367,7 @@ export default function Reportes() {
 
       {/* Reporte 4: Tendencia de Indicadores */}
       <div className="bg-white rounded-lg border p-6 max-w-2xl">
-        <h2 className="text-base font-semibold text-navy mb-1">Tendencia de Indicadores</h2>
+        <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Tendencia de Indicadores</h2>
         <p className="text-sm text-gray-500 mb-4">
           Evolución de indicadores de un corredor en el tiempo.
         </p>
@@ -400,6 +404,7 @@ export default function Reportes() {
               })}
               disabled={!tendCorredorId || !tendFechaInicio || !tendFechaFin}
               className="bg-navy text-white hover:bg-navy-dark"
+              style={{ backgroundColor: 'var(--navy)', color: 'white' }}
             >
               Buscar
             </Button>

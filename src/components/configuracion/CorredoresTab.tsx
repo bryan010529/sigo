@@ -68,6 +68,7 @@ export function CorredoresTab() {
         <Button
           onClick={() => setShowForm(f => !f)}
           className="bg-navy text-white hover:bg-navy-dark flex items-center gap-1 text-sm"
+          style={{ backgroundColor: 'var(--navy)', color: 'white' }}
         >
           <Plus className="w-4 h-4" />
           Agregar corredor
@@ -113,7 +114,12 @@ export function CorredoresTab() {
           </div>
           {formError && <p className="text-red-500 text-xs">{formError}</p>}
           <div className="flex gap-2">
-            <Button type="submit" disabled={saving} className="bg-navy text-white hover:bg-navy-dark text-sm">
+            <Button
+              type="submit"
+              disabled={saving}
+              className="bg-navy text-white hover:bg-navy-dark text-sm"
+              style={{ backgroundColor: 'var(--navy)', color: 'white' }}
+            >
               {saving ? 'Guardando...' : 'Guardar'}
             </Button>
             <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="text-sm">
@@ -128,7 +134,7 @@ export function CorredoresTab() {
       {/* Tabla de corredores */}
       <div className="border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-navy text-white">
+          <thead className="bg-navy text-white" style={{ backgroundColor: 'var(--navy)', color: 'white' }}>
             <tr>
               {['Orden', 'Código', 'Nombre', 'Costo/km (RD$)', 'Estado', 'Acciones'].map(h => (
                 <th key={h} className="text-left px-4 py-2 font-medium">
@@ -147,6 +153,7 @@ export function CorredoresTab() {
                       onClick={() => moverArriba(c.id)}
                       disabled={idx === 0}
                       className="text-gray-400 hover:text-navy disabled:opacity-30"
+                      style={{ color: 'var(--navy)' }}
                     >
                       <ChevronUp className="w-4 h-4" />
                     </button>
@@ -154,6 +161,7 @@ export function CorredoresTab() {
                       onClick={() => moverAbajo(c.id)}
                       disabled={idx === corredores.length - 1}
                       className="text-gray-400 hover:text-navy disabled:opacity-30"
+                      style={{ color: 'var(--navy)' }}
                     >
                       <ChevronDown className="w-4 h-4" />
                     </button>
@@ -217,6 +225,7 @@ export function CorredoresTab() {
                         setEditCosto(String(c.costo_por_km ?? 0));
                       }}
                       className="text-navy hover:text-navy-dark"
+                      style={{ color: 'var(--navy)' }}
                       title="Editar nombre"
                     >
                       <Pencil className="w-3.5 h-3.5" />

@@ -46,7 +46,11 @@ export function UsuariosTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">{usuarios.length} usuario(s)</p>
-        <Button onClick={() => setShowModal(true)} className="bg-navy text-white hover:bg-navy-dark flex items-center gap-1 text-sm">
+        <Button
+          onClick={() => setShowModal(true)}
+          className="bg-navy text-white hover:bg-navy-dark flex items-center gap-1 text-sm"
+          style={{ backgroundColor: 'var(--navy)', color: 'white' }}
+        >
           <UserPlus className="w-4 h-4" />
           Crear usuario
         </Button>
@@ -56,7 +60,7 @@ export function UsuariosTab() {
 
       <div className="border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-navy text-white">
+          <thead className="bg-navy text-white" style={{ backgroundColor: 'var(--navy)', color: 'white' }}>
             <tr>
               {['Nombre', 'Email', 'Rol', 'Estado', 'Acciones'].map(h => (
                 <th key={h} className="text-left px-4 py-2 font-medium">

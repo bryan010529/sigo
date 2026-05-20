@@ -55,6 +55,7 @@ export function AuditoriaTab() {
         </div>
         <button
           className="text-xs text-gray-500 hover:text-navy underline pb-1.5"
+          style={{ color: 'var(--navy)' }}
           onClick={() => setFiltros({ accion: '', desde: '', hasta: '', usuarioId: '' })}
         >
           Limpiar filtros
@@ -67,7 +68,7 @@ export function AuditoriaTab() {
       {!loading && !error && (
         <div className="border rounded-lg overflow-hidden">
           <table className="w-full text-xs">
-            <thead className="bg-navy text-white">
+            <thead className="bg-navy text-white" style={{ backgroundColor: 'var(--navy)', color: 'white' }}>
               <tr>
                 {['Fecha/Hora', 'Tabla', 'Acción', 'Usuario', 'Detalle'].map(h => (
                   <th key={h} className="text-left px-3 py-2 font-medium whitespace-nowrap">
