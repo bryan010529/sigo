@@ -14,9 +14,9 @@
   --yellow: #f39c12;
   --red: #e74c3c;
   --light: #f4f6f9;
-  --border: oklch(0.922 0 0);
+  --border: #dde3eb;
   --text: #2c3e50;
-  --muted: oklch(0.97 0 0);
+  --muted: #6c7a8d;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
