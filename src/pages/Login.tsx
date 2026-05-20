@@ -1,25 +1,39 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, FormEvent, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/authStore';
 
 export default function Login() {
-  const navigate = useNavigate();
+  const { usuario, loading: authLoading } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Si authLoading terminó sin usuario pero el form estaba enviando → liberar spinner
+  useEffect(() => {
+    if (!authLoading && !usuario && loading) {
+      setLoading(false);
+      setError('Perfil de usuario no encontrado. Contacta al administrador.');
+    }
+  }, [authLoading, usuario, loading]);
+
+  // Redirigir si ya hay sesión activa (después de hooks)
+  if (!authLoading && usuario) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
     if (authError) {
+      setLoading(false);
       setError('Credenciales incorrectas. Verifica tu email y contraseña.');
       return;
     }
-    navigate('/dashboard');
+    // La redirección ocurre automáticamente vía onAuthStateChange en useAuth
   }
 
   return (

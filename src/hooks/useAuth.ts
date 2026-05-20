@@ -32,8 +32,12 @@ export function useAuth() {
       async (event, session) => {
         if (!mounted) return;
         if (event === 'SIGNED_IN' && session?.user) {
+          setLoading(true);
           const usuario = await fetchUsuario(session.user.id);
-          setUsuario(usuario);
+          if (mounted) {
+            setUsuario(usuario);
+            setLoading(false);
+          }
         } else if (event === 'SIGNED_OUT') {
           reset();
         }
