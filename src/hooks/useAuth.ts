@@ -23,7 +23,7 @@ export function useAuth() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
       if (session?.user) {
-        const { usuario } = await fetchUsuario(session.user.id);
+        const usuario = await fetchUsuario(session.user.id);
         if (mounted) setUsuario(usuario);
       }
       if (mounted) setLoading(false);
