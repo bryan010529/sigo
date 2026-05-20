@@ -1,24 +1,17 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { fetchUsuario } from '../hooks/useAuth';
 
 export default function Login() {
-  const { usuario, loading: authLoading } = useAuthStore();
+  const { usuario, loading: authLoading, setUsuario } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Si authLoading terminó sin usuario pero el form estaba enviando → liberar spinner
-  useEffect(() => {
-    if (!authLoading && !usuario && loading) {
-      setLoading(false);
-      setError('Perfil de usuario no encontrado. Contacta al administrador.');
-    }
-  }, [authLoading, usuario, loading]);
-
-  // Redirigir si ya hay sesión activa (después de hooks)
+  // Redirigir si ya hay sesión activa
   if (!authLoading && usuario) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -27,13 +20,24 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) {
       setLoading(false);
       setError('Credenciales incorrectas. Verifica tu email y contraseña.');
       return;
     }
-    // La redirección ocurre automáticamente vía onAuthStateChange en useAuth
+
+    // Fetch del perfil inmediatamente con la sesión ya establecida
+    const perfil = await fetchUsuario(authData.user.id);
+    if (!perfil) {
+      setLoading(false);
+      setError('Perfil no encontrado. Contacta al administrador del sistema.');
+      return;
+    }
+
+    setUsuario(perfil);
+    // El redirect ocurre automáticamente cuando usuario != null
   }
 
   return (

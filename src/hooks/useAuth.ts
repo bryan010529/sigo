@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import type { Usuario } from '../types';
 
-async function fetchUsuario(userId: string): Promise<Usuario | null> {
+export async function fetchUsuario(userId: string): Promise<Usuario | null> {
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')
@@ -19,6 +19,7 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
+    // Restaurar sesión existente al cargar la app (ej: reload de página)
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
       if (session?.user) {
@@ -29,18 +30,13 @@ export function useAuth() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, _session) => {
         if (!mounted) return;
-        if (event === 'SIGNED_IN' && session?.user) {
-          setLoading(true);
-          const usuario = await fetchUsuario(session.user.id);
-          if (mounted) {
-            setUsuario(usuario);
-            setLoading(false);
-          }
-        } else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           reset();
         }
+        // SIGNED_IN es manejado en Login.tsx directamente para evitar
+        // el timing issue donde el JWT no está listo para queries RLS
       }
     );
 
