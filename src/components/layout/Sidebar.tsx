@@ -6,6 +6,7 @@ import {
   FileText,
   Settings,
   LogOut,
+  Route,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
@@ -145,6 +146,23 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       {/* Admin section */}
       {usuario?.rol === 'admin' && (
         <div className="px-3 py-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+          <NavLink
+            to="/configuracion?tab=corredores"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'hover:bg-white/10'
+              }`
+            }
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: 'var(--navy-light)' }
+                : { color: 'rgba(255,255,255,0.75)' }
+            }
+          >
+            <Route size={18} />
+            Corredores
+          </NavLink>
           <NavLink
             to="/configuracion"
             onClick={onClose}

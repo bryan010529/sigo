@@ -17,7 +17,7 @@ export default function Registro() {
   const { semanaId } = useParams<{ semanaId?: string }>();
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
-  const { semanaActual, setSemana, setCorredorActivo, corredorActivoId } = useRegistroStore();
+  const { semanaActual, setSemana, setCorredorActivo, corredorActivoId, reset } = useRegistroStore();
   const { corredores, loading: loadingCorredores } = useCorredores();
   const { rowsByCorredor, saving, error, initRows, updateRow, guardarCorredor, guardarTodo } = useRegistros();
 
@@ -27,6 +27,12 @@ export default function Registro() {
   const [metaError, setMetaError] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Reset stale store state when opening a new registro
+  useEffect(() => {
+    if (!semanaId) reset();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!semanaId) return;
@@ -58,9 +64,9 @@ export default function Registro() {
   }, [semanaId, corredores, navigate, initRows, setSemana]);
 
   useEffect(() => {
-    if (step === 2 && corredores.length > 0 && !corredorActivoId) {
-      setCorredorActivo(corredores[0].id);
-    }
+    if (step !== 2 || corredores.length === 0) return;
+    const valid = corredores.some(c => c.id === corredorActivoId);
+    if (!valid) setCorredorActivo(corredores[0].id);
   }, [step, corredores, corredorActivoId, setCorredorActivo]);
 
   async function handleMetaSubmit(values: MetadataValues) {

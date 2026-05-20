@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { UsuariosTab } from '../components/configuracion/UsuariosTab';
 import { CorredoresTab } from '../components/configuracion/CorredoresTab';
 import { AuditoriaTab } from '../components/configuracion/AuditoriaTab';
@@ -11,8 +12,13 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'auditoria', label: 'Auditoría' },
 ];
 
+const VALID_TABS: Tab[] = ['usuarios', 'corredores', 'auditoria'];
+
 export default function Configuracion() {
-  const [tab, setTab] = useState<Tab>('usuarios');
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') as Tab | null;
+  const initialTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : 'usuarios';
+  const [tab, setTab] = useState<Tab>(initialTab);
 
   return (
     <div className="p-6 space-y-6 max-w-5xl">
