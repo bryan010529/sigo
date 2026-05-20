@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronLeft, Save, Send, Upload } from 'lucide-react';
+import { ChevronLeft, Loader2, Save, Send, Upload } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { generarDiasSemana } from '../lib/dateUtils';
 import { useAuthStore } from '../store/authStore';
@@ -18,50 +18,40 @@ export default function Registro() {
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
   const { semanaActual, setSemana, setCorredorActivo, corredorActivoId } = useRegistroStore();
-  const { corredores } = useCorredores();
-  const {
-    rowsByCorredor,
-    saving,
-    error,
-    initRows,
-    updateRow,
-    guardarCorredor,
-    guardarTodo,
-  } = useRegistros();
+  const { corredores, loading: loadingCorredores } = useCorredores();
+  const { rowsByCorredor, saving, error, initRows, updateRow, guardarCorredor, guardarTodo } = useRegistros();
 
   const [step, setStep] = useState<1 | 2>(semanaId ? 2 : 1);
+  const [loadingEdit, setLoadingEdit] = useState(!!semanaId);
   const [metaSubmitting, setMetaSubmitting] = useState(false);
   const [metaError, setMetaError] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!semanaId) {
-      return;
-    }
+    if (!semanaId) return;
 
     async function loadSemana() {
-      const { data, error } = await supabase
+      const { data, error: semErr } = await supabase
         .from('semanas')
         .select('*')
         .eq('id', semanaId)
         .single();
 
-      if (error || !data) {
+      if (semErr || !data) {
         navigate('/semanas');
         return;
       }
 
       setSemana(data as Semana);
+      setLoadingEdit(false);
 
       const { data: registros } = await supabase
         .from('registros_diarios')
         .select('*')
         .eq('semana_id', semanaId);
 
-      if (corredores.length > 0) {
-        initRows((data as Semana).fecha_inicio, corredores, (registros ?? []) as RegistroDiario[]);
-      }
+      initRows((data as Semana).fecha_inicio, corredores, (registros ?? []) as RegistroDiario[]);
     }
 
     void loadSemana();
@@ -76,9 +66,8 @@ export default function Registro() {
   async function handleMetaSubmit(values: MetadataValues) {
     setMetaSubmitting(true);
     setMetaError(null);
-
     try {
-      const { data, error } = await supabase
+      const { data, error: insErr } = await supabase
         .from('semanas')
         .insert({
           numero_semana: parseInt(values.numero_semana, 10),
@@ -93,10 +82,7 @@ export default function Registro() {
         .select()
         .single();
 
-      if (error) {
-        setMetaError(error.message);
-        return;
-      }
+      if (insErr) { setMetaError(insErr.message); return; }
 
       setSemana(data as Semana);
       initRows(values.fecha_inicio, corredores, []);
@@ -110,176 +96,200 @@ export default function Registro() {
     if (!semanaActual || !corredorActivoId) return;
     await guardarCorredor(semanaActual.id, corredorActivoId);
     setFeedback('Corredor guardado');
-    setTimeout(() => setFeedback(null), 2000);
+    setTimeout(() => setFeedback(null), 2500);
   }
 
   async function handleGuardarTodo() {
     if (!semanaActual) return;
     await guardarTodo(semanaActual.id);
     setFeedback('Semana guardada');
-    setTimeout(() => setFeedback(null), 2000);
+    setTimeout(() => setFeedback(null), 2500);
   }
 
   async function handleEnviarRevision() {
     if (!semanaActual) return;
-    const { error } = await supabase
+    const { error: updErr } = await supabase
       .from('semanas')
       .update({ estado: 'en_revision' })
       .eq('id', semanaActual.id);
-    if (!error) {
-      navigate('/semanas');
-    }
+    if (!updErr) navigate('/semanas');
   }
 
-  const corredor = corredores.find((c) => c.id === corredorActivoId);
+  const corredor = corredores.find(c => c.id === corredorActivoId);
   const rows = corredorActivoId ? rowsByCorredor[corredorActivoId] ?? [] : [];
   const fechasSemana = semanaActual ? generarDiasSemana(semanaActual.fecha_inicio) : [];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-6xl">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => {
-            navigate('/semanas');
-          }}
-          className="text-gray-500 hover:text-navy"
-        >
+        <button onClick={() => navigate('/semanas')} className="hover:opacity-70 transition-opacity" style={{ color: 'var(--muted)' }}>
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold text-navy">{semanaId ? 'Editar Semana' : 'Nuevo Registro'}</h1>
-        {semanaActual && (
-          <span className="text-sm text-gray-500">
-            Semana {semanaActual.numero_semana} / {semanaActual.periodo}
-          </span>
-        )}
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>
+            {semanaId ? 'Editar Semana' : 'Nuevo Registro'}
+          </h1>
+          {semanaActual && (
+            <p className="text-xs" style={{ color: 'var(--muted)' }}>
+              Semana {semanaActual.numero_semana} / Período {semanaActual.periodo}
+            </p>
+          )}
+        </div>
       </div>
 
+      {/* Step 1 — Metadatos */}
       {step === 1 && (
-        <div className="bg-white rounded-lg border p-6 max-w-xl">
-          <h2 className="text-base font-semibold text-navy mb-4">Paso 1 — Información de la semana</h2>
-          {metaError && <p className="text-red-500 text-sm mb-3">{metaError}</p>}
+        <div className="bg-white rounded-xl border p-6 max-w-xl" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--navy)' }}>
+            Paso 1 — Información de la semana
+          </h2>
+          {metaError && (
+            <div className="mb-3 text-sm px-3 py-2 rounded-lg" style={{ backgroundColor: '#fef2f2', color: 'var(--red)', border: '1px solid #fecaca' }}>
+              {metaError}
+            </div>
+          )}
           <MetadataForm onSubmit={handleMetaSubmit} submitting={metaSubmitting} />
         </div>
       )}
 
-      {step === 2 && semanaActual && (
-        <div className="space-y-4">
-          <div className="flex gap-2 flex-wrap">
-            {corredores.map((corredorItem) => {
-              const tieneAlgunDato = (rowsByCorredor[corredorItem.id] ?? []).some((r) => r.kms_programados || r.ica);
-              return (
-                <button
-                  key={corredorItem.id}
-                  onClick={() => setCorredorActivo(corredorItem.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1 border transition-colors ${
-                    corredorActivoId === corredorItem.id
-                      ? 'bg-navy text-white border-navy'
-                      : 'bg-white text-navy border-navy/30 hover:border-navy'
-                  }`}
-                >
-                  {corredorItem.codigo} — {corredorItem.nombre}
-                  {tieneAlgunDato && <span className="w-2 h-2 rounded-full bg-green-500 ml-1" />}
-                </button>
-              );
-            })}
+      {/* Step 2 — Cargando (modo edición) */}
+      {step === 2 && loadingEdit && (
+        <div className="flex items-center justify-center h-48">
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--navy)' }} />
+        </div>
+      )}
+
+      {/* Step 2 — Contenido principal */}
+      {step === 2 && !loadingEdit && semanaActual && (
+        <div className="space-y-5">
+
+          {/* Selector de corredor */}
+          <div>
+            <p className="text-xs font-medium mb-2" style={{ color: 'var(--muted)' }}>CORREDOR</p>
+            {loadingCorredores ? (
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>Cargando corredores...</p>
+            ) : (
+              <div className="flex gap-2 flex-wrap">
+                {corredores.map(c => {
+                  const tieneAlgunDato = (rowsByCorredor[c.id] ?? []).some(r => r.kms_programados || r.ica);
+                  const activo = corredorActivoId === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setCorredorActivo(c.id)}
+                      className="px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1.5 transition-colors"
+                      style={{
+                        backgroundColor: activo ? 'var(--navy)' : 'white',
+                        color: activo ? 'white' : 'var(--navy)',
+                        border: `1px solid ${activo ? 'var(--navy)' : 'var(--border)'}`,
+                      }}
+                    >
+                      {c.codigo} — {c.nombre}
+                      {tieneAlgunDato && (
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--green)' }} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">Método:</span>
-            <span className="text-sm font-medium">Manual</span>
+          {/* Selector método */}
+          <div className="flex items-center gap-3 text-sm">
+            <span style={{ color: 'var(--muted)' }}>Método:</span>
+            <span className="font-medium" style={{ color: 'var(--text)' }}>Manual</span>
             <button
-              className="flex items-center gap-1 text-sm text-navy hover:underline"
-              onClick={() => {
-                setShowImport(true);
-              }}
+              className="flex items-center gap-1 hover:underline"
+              style={{ color: 'var(--navy)' }}
+              onClick={() => setShowImport(true)}
             >
               <Upload className="w-4 h-4" />
               Cargar archivo
             </button>
           </div>
 
-          {corredor && (
-            <div className="bg-white rounded-lg border p-4">
+          {/* Tabla del corredor */}
+          {corredor ? (
+            <div className="bg-white rounded-xl border overflow-auto" style={{ borderColor: 'var(--border)' }}>
               <CorredorTab
                 corredor={corredor}
                 rows={rows}
-                onChange={(rowIndex, campo, valor) => {
-                  updateRow(corredorActivoId!, rowIndex, campo, valor);
-                }}
+                onChange={(rowIndex, campo, valor) => updateRow(corredorActivoId!, rowIndex, campo, valor)}
               />
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border p-8 text-center" style={{ borderColor: 'var(--border)' }}>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>
+                Selecciona un corredor para ingresar datos.
+              </p>
             </div>
           )}
 
+          {/* Feedback / Error */}
           {(error || feedback) && (
-            <p className={`text-sm ${error ? 'text-red-500' : 'text-green-600'}`}>
+            <div
+              className="text-sm px-3 py-2 rounded-lg"
+              style={error
+                ? { backgroundColor: '#fef2f2', color: 'var(--red)', border: '1px solid #fecaca' }
+                : { backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #86efac' }
+              }
+            >
               {error ?? feedback}
-            </p>
+            </div>
           )}
 
-          <div className="flex gap-3 pt-2">
+          {/* Botones de acción */}
+          <div className="flex gap-3 flex-wrap pt-1">
             <Button
               onClick={handleGuardarCorredor}
-              disabled={saving}
+              disabled={saving || !corredorActivoId}
               variant="outline"
-              className="flex items-center gap-1"
+              className="flex items-center gap-1.5"
+              style={{ borderColor: 'var(--border)', color: 'var(--navy)' }}
             >
-              <Save className="w-4 h-4" />
-              Guardar Corredor
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Guardar corredor
             </Button>
             <Button
               onClick={handleGuardarTodo}
               disabled={saving}
-              className="bg-navy text-white hover:bg-navy-dark flex items-center gap-1"
+              className="flex items-center gap-1.5 text-white"
+              style={{ backgroundColor: 'var(--navy)' }}
             >
-              <Save className="w-4 h-4" />
-              Guardar Semana Completa
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Guardar semana completa
             </Button>
             <Button
               onClick={handleEnviarRevision}
               disabled={saving}
-              className="bg-intrant-orange text-white flex items-center gap-1"
+              className="flex items-center gap-1.5 text-white"
+              style={{ backgroundColor: 'var(--orange)' }}
             >
               <Send className="w-4 h-4" />
-              Enviar a Revisión
+              Enviar a revisión
             </Button>
           </div>
         </div>
       )}
 
+      {/* Modal de importación */}
       {showImport && corredorActivoId && (
         <ImportModal
           fechasSemana={fechasSemana}
           onImport={(importedRows) => {
+            const campos = ['kms_programados','kms_ejecutados','kms_efectivos','total_pasajeros',
+              'servicios_programados','servicios_ejecutados','servicios_puntuales','ica','ick','icd','ip','ie'] as const;
             importedRows.forEach((row, i) => {
-              const campos = [
-                'kms_programados',
-                'kms_ejecutados',
-                'kms_efectivos',
-                'total_pasajeros',
-                'servicios_programados',
-                'servicios_ejecutados',
-                'servicios_puntuales',
-                'ica',
-                'ick',
-                'icd',
-                'ip',
-                'ie',
-              ] as const;
-              campos.forEach((campo) => {
-                updateRow(
-                  corredorActivoId,
-                  i,
-                  campo,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (row as any)[campo] ?? ''
-                );
+              campos.forEach(campo => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                updateRow(corredorActivoId, i, campo, (row as any)[campo] ?? '');
               });
             });
             setShowImport(false);
           }}
-          onClose={() => {
-            setShowImport(false);
-          }}
+          onClose={() => setShowImport(false)}
         />
       )}
     </div>
