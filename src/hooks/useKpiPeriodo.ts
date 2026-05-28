@@ -44,11 +44,12 @@ async function fetchKpiData(
 
   if (filtro.tipo === 'semana' && filtro.semanaId) {
     semanaIds = [filtro.semanaId];
-    const { data: semData } = await supabase
+    const { data: semData, error: semYearErr } = await supabase
       .from('semanas')
       .select('periodo')
       .eq('id', filtro.semanaId)
       .single();
+    if (semYearErr) throw semYearErr;
     if (semData) año = semData.periodo;
 
   } else if (filtro.tipo === 'mes' && filtro.mes && filtro.año) {
@@ -90,10 +91,11 @@ async function fetchKpiData(
   }
 
   // 4. Canasta de costo para el año (lookup por corredor)
-  const { data: canastaData } = await supabase
+  const { data: canastaData, error: canastaErr } = await supabase
     .from('canasta_costo')
     .select('corredor_id, costo_por_km')
     .eq('año', año);
+  if (canastaErr) throw canastaErr;
   const canastaMap = new Map<string, number>(
     (canastaData ?? []).map(c => [c.corredor_id, Number(c.costo_por_km)])
   );
