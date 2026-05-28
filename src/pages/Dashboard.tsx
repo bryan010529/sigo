@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDashboard } from '../hooks/useDashboard';
 import KpiCards from '../components/dashboard/KpiCards';
 import Charts from '../components/dashboard/Charts';
+import { KpiPanel } from '../components/kpi/KpiPanel';
 import type { DashboardFilters } from '../hooks/useDashboard';
 
 export default function Dashboard() {
@@ -115,6 +116,7 @@ export default function Dashboard() {
             serviciosChart={serviciosChart}
             corredores={corredores}
           />
+          <KpiPanel />
         </>
       )}
     </div>
