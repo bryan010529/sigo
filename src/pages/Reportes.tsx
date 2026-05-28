@@ -8,6 +8,7 @@ import { ResumenMensualPDF } from '../components/reportes/ResumenMensualPDF';
 import { ComparativoChart } from '../components/reportes/ComparativoChart';
 import { TendenciaChart } from '../components/reportes/TendenciaChart';
 import { Button } from '../components/ui/button';
+import { KpiPanel } from '../components/kpi/KpiPanel';
 import { useResumenMensual } from '../hooks/useResumenMensual';
 import { useComparativoCorredores } from '../hooks/useComparativoCorredores';
 import { useTendenciaIndicadores } from '../hooks/useTendenciaIndicadores';
@@ -138,11 +139,13 @@ export default function Reportes() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-5xl mx-auto">
       <h1 className="text-xl font-bold text-navy" style={{ color: 'var(--navy)' }}>Reportes</h1>
 
+      <KpiPanel />
+
       {/* Reporte 1 */}
-      <div className="bg-white rounded-lg border p-6 max-w-2xl">
+      <div className="bg-white rounded-lg border p-6">
         <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Informe Semanal Oficial</h2>
         <p className="text-sm text-gray-500 mb-4">
           Formato oficial INTRANT / SITPSD con Sección I y Sección II por corredor.
@@ -210,7 +213,7 @@ export default function Reportes() {
       </div>
 
       {/* Reporte 2: Resumen Mensual */}
-      <div className="bg-white rounded-lg border p-6 max-w-2xl">
+      <div className="bg-white rounded-lg border p-6">
         <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Resumen Mensual</h2>
         <p className="text-sm text-gray-500 mb-4">
           Tabla consolidada de todas las semanas de un período. Exporta PDF y Excel.
@@ -274,7 +277,7 @@ export default function Reportes() {
       </div>
 
       {/* Reporte 3: Comparativo de Corredores */}
-      <div className="bg-white rounded-lg border p-6 max-w-2xl">
+      <div className="bg-white rounded-lg border p-6">
         <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Comparativo de Corredores</h2>
         <p className="text-sm text-gray-500">
           Indicadores promedio por corredor en un rango de semanas.
@@ -366,7 +369,7 @@ export default function Reportes() {
       </div>
 
       {/* Reporte 4: Tendencia de Indicadores */}
-      <div className="bg-white rounded-lg border p-6 max-w-2xl">
+      <div className="bg-white rounded-lg border p-6">
         <h2 className="text-base font-semibold text-navy mb-1" style={{ color: 'var(--navy)' }}>Tendencia de Indicadores</h2>
         <p className="text-sm text-gray-500 mb-4">
           Evolución de indicadores de un corredor en el tiempo.
