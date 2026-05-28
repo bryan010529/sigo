@@ -44,7 +44,10 @@ export function CanastaCostoTab() {
       .select('id, codigo, nombre')
       .eq('activo', true)
       .order('orden', { ascending: true })
-      .then(({ data }) => setCorredores((data ?? []) as { id: string; codigo: string; nombre: string }[]));
+      .then(({ data, error: fetchErr }) => {
+        if (fetchErr) console.error('Error cargando corredores:', fetchErr.message);
+        setCorredores((data ?? []) as { id: string; codigo: string; nombre: string }[]);
+      });
   }, []);
 
   function showFeedback(msg: string) {
@@ -96,9 +99,8 @@ export function CanastaCostoTab() {
     setSaving(true);
     setFormError(null);
 
-    const data = {
-      corredor_id: form.corredor_id,
-      año: parseInt(form.año),
+    const numericFields = {
+      año: parseInt(form.año, 10),
       costo_por_km: parseFloat(form.costo_por_km),
       combustible_pct: parseFloat(form.combustible_pct),
       conductores_pct: parseFloat(form.conductores_pct),
@@ -109,8 +111,8 @@ export function CanastaCostoTab() {
     };
 
     const err = editingId
-      ? await actualizar(editingId, data)
-      : await crear(data);
+      ? await actualizar(editingId, numericFields)
+      : await crear({ corredor_id: form.corredor_id, ...numericFields });
 
     setSaving(false);
     if (err) {
@@ -119,8 +121,9 @@ export function CanastaCostoTab() {
         : err);
       return;
     }
+    const wasEditing = !!editingId;
     closeForm();
-    showFeedback(editingId ? 'Canasta actualizada' : 'Canasta creada');
+    showFeedback(wasEditing ? 'Canasta actualizada' : 'Canasta creada');
   }
 
   async function handleEliminar(id: string) {
@@ -279,10 +282,10 @@ export function CanastaCostoTab() {
           <table className="w-full text-sm min-w-[1000px]">
             <thead style={{ backgroundColor: 'var(--navy)', color: 'white' }}>
               <tr>
-                {['Corredor', 'Año', 'RD$/km', 'Combustible', 'Conductores', 'Patio', 'Admin.', 'Mant.', 'Otros', ''].map(
-                  h => (
-                    <th key={h} className="text-left px-4 py-2 font-medium whitespace-nowrap">
-                      {h}
+                {['Corredor', 'Año', 'RD$/km', 'Combustible', 'Conductores', 'Patio', 'Admin.', 'Mant.', 'Otros', 'Acciones'].map(
+                  (h, i) => (
+                    <th key={i} className="text-left px-4 py-2 font-medium whitespace-nowrap">
+                      {h === 'Acciones' ? '' : h}
                     </th>
                   )
                 )}
