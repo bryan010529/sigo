@@ -182,21 +182,21 @@ export function KpiPanel() {
   const { filas, totales, loading, error } = useKpiPeriodo(filtroAplicado);
 
   useEffect(() => {
-    supabase
-      .from('semanas')
-      .select('id, numero_semana, periodo, fecha_inicio, fecha_fin')
-      .in('estado', ['validado', 'publicado'])
-      .order('periodo', { ascending: false })
-      .order('numero_semana', { ascending: false })
-      .then(({ data }) => {
-        setSemanas(
-          (data ?? []).map(s => ({
-            id: s.id,
-            label: `S${s.numero_semana} · P${s.periodo} (${s.fecha_inicio} → ${s.fecha_fin})`,
-          }))
-        );
-      })
-      .catch(err => console.error('Error cargando semanas:', err));
+    (async () => {
+      const { data, error } = await supabase
+        .from('semanas')
+        .select('id, numero_semana, periodo, fecha_inicio, fecha_fin')
+        .in('estado', ['validado', 'publicado'])
+        .order('periodo', { ascending: false })
+        .order('numero_semana', { ascending: false });
+      if (error) { console.error('Error cargando semanas:', error); return; }
+      setSemanas(
+        (data ?? []).map(s => ({
+          id: s.id,
+          label: `S${s.numero_semana} · P${s.periodo} (${s.fecha_inicio} → ${s.fecha_fin})`,
+        }))
+      );
+    })();
   }, []);
 
   function handleTipoChange(t: KpiPeriodoTipo) {
