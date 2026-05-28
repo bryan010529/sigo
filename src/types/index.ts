@@ -103,3 +103,49 @@ export interface CanastaCosto {
 export interface CanastaCostoConCorredor extends CanastaCosto {
   corredor: { codigo: string; nombre: string };
 }
+
+export type KpiPeriodoTipo = 'semana' | 'mes' | 'año';
+
+export interface KpiPeriodoFiltro {
+  tipo: KpiPeriodoTipo;
+  semanaId?: string;
+  mes?: number;
+  año?: number;
+}
+
+export interface KpiCorredorRow {
+  corredorId: string;
+  corredorCodigo: string;
+  corredorNombre: string;
+  kmsProgramados: number;
+  kmsEjecutados: number;
+  kmsEfectivos: number;
+  costoProgramado: number;
+  costoEjecutado: number;
+  costoEfectivo: number;
+  pctCumplimiento: number | null;
+  pctEfectividad: number | null;
+  pctAprovechamiento: number | null;
+  brechaCosto: number;
+  sinCanasta: boolean;
+}
+
+export interface KpiPeriodoTotales {
+  kmsProgramados: number;
+  kmsEjecutados: number;
+  kmsEfectivos: number;
+  costoProgramado: number;
+  costoEjecutado: number;
+  costoEfectivo: number;
+  pctCumplimiento: number | null;
+  pctEfectividad: number | null;
+  pctAprovechamiento: number | null;
+  brechaCosto: number;
+}
+
+export interface KpiPeriodoResult {
+  filas: KpiCorredorRow[];
+  totales: KpiPeriodoTotales;
+  loading: boolean;
+  error: string | null;
+}
