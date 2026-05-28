@@ -6,10 +6,10 @@ export interface UseCorredoresAdminResult {
   corredores: Corredor[];
   loading: boolean;
   error: string | null;
-  crearCorredor: (codigo: string, nombre: string, costo_por_km?: number) => Promise<string | null>;
+  crearCorredor: (codigo: string, nombre: string) => Promise<string | null>;
   editarCorredor: (
     id: string,
-    campos: Partial<Pick<Corredor, 'nombre' | 'activo' | 'costo_por_km'>>
+    campos: Partial<Pick<Corredor, 'nombre' | 'activo'>>
   ) => Promise<string | null>;
   moverArriba: (id: string) => Promise<void>;
   moverAbajo: (id: string) => Promise<void>;
@@ -43,19 +43,13 @@ export function useCorredoresAdmin(): UseCorredoresAdminResult {
   }, [tick]);
 
   const crearCorredor = useCallback(
-    async (
-      codigo: string,
-      nombre: string,
-      costo_por_km?: number
-    ): Promise<string | null> => {
-      // El orden del nuevo corredor es el mayor orden actual + 1
+    async (codigo: string, nombre: string): Promise<string | null> => {
       const maxOrden = corredores.reduce((m, c) => Math.max(m, c.orden), 0);
       const { error: err } = await supabase.from('corredores').insert({
         codigo: codigo.trim().toUpperCase(),
         nombre: nombre.trim(),
         activo: true,
         orden: maxOrden + 1,
-        costo_por_km: costo_por_km ?? 0,
       });
       if (err) return err.message;
       refetch();
@@ -67,7 +61,7 @@ export function useCorredoresAdmin(): UseCorredoresAdminResult {
   const editarCorredor = useCallback(
     async (
       id: string,
-      campos: Partial<Pick<Corredor, 'nombre' | 'activo' | 'costo_por_km'>>
+      campos: Partial<Pick<Corredor, 'nombre' | 'activo'>>
     ): Promise<string | null> => {
       const { error: err } = await supabase.from('corredores').update(campos).eq('id', id);
       if (err) return err.message;

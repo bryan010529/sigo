@@ -19,7 +19,6 @@ export interface Corredor {
   activo: boolean;
   orden: number;
   notas?: string;
-  costo_por_km?: number;
   created_at: string;
 }
 
@@ -84,4 +83,23 @@ export interface TotalesCorredor {
 export interface SemanaConTotales extends Semana {
   corredor: Corredor;
   totales: TotalesCorredor;
+}
+
+export interface CanastaCosto {
+  id: string;
+  corredor_id: string;
+  año: number;
+  costo_por_km: number;
+  combustible_pct: number;
+  conductores_pct: number;
+  patio_pct: number;
+  administracion_pct: number;
+  mantenimiento_pct: number;
+  otros_pct: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CanastaCostoConCorredor extends CanastaCosto {
+  corredor: { codigo: string; nombre: string };
 }

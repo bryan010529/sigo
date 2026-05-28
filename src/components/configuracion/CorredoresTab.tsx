@@ -9,12 +9,10 @@ export function CorredoresTab() {
   const [showForm, setShowForm] = useState(false);
   const [codigo, setCodigo] = useState('');
   const [nombre, setNombre] = useState('');
-  const [costo, setCosto] = useState('');
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editNombre, setEditNombre] = useState('');
-  const [editCosto, setEditCosto] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
 
   function showFeedback(msg: string) {
@@ -27,7 +25,7 @@ export function CorredoresTab() {
     if (!codigo || !nombre) return;
     setSaving(true);
     setFormError(null);
-    const err = await crearCorredor(codigo, nombre, costo ? parseFloat(costo) : 0);
+    const err = await crearCorredor(codigo, nombre);
     setSaving(false);
     if (err) {
       setFormError(err);
@@ -35,16 +33,12 @@ export function CorredoresTab() {
     }
     setCodigo('');
     setNombre('');
-    setCosto('');
     setShowForm(false);
     showFeedback('Corredor creado');
   }
 
   async function handleEditSave(id: string) {
-    const err = await editarCorredor(id, {
-      nombre: editNombre.trim(),
-      costo_por_km: editCosto ? parseFloat(editCosto) : 0,
-    });
+    const err = await editarCorredor(id, { nombre: editNombre.trim() });
     setEditingId(null);
     if (err) showFeedback(`Error: ${err}`);
     else showFeedback('Corredor actualizado');
@@ -78,7 +72,7 @@ export function CorredoresTab() {
       {/* Formulario de creación */}
       {showForm && (
         <form onSubmit={handleCrear} className="bg-gray-50 border rounded-lg p-4 space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Código</label>
               <input
@@ -97,18 +91,6 @@ export function CorredoresTab() {
                 value={nombre}
                 onChange={e => setNombre(e.target.value)}
                 required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Costo/km (RD$)</label>
-              <input
-                type="number"
-                step="0.0001"
-                min="0"
-                className={`${inputCls} w-full`}
-                placeholder="ej: 45.7823"
-                value={costo}
-                onChange={e => setCosto(e.target.value)}
               />
             </div>
           </div>
@@ -136,7 +118,7 @@ export function CorredoresTab() {
         <table className="w-full text-sm">
           <thead className="bg-navy text-white" style={{ backgroundColor: 'var(--navy)', color: 'white' }}>
             <tr>
-              {['Orden', 'Código', 'Nombre', 'Costo/km (RD$)', 'Estado', 'Acciones'].map(h => (
+              {['Orden', 'Código', 'Nombre', 'Estado', 'Acciones'].map(h => (
                 <th key={h} className="text-left px-4 py-2 font-medium">
                   {h}
                 </th>
@@ -178,22 +160,6 @@ export function CorredoresTab() {
                         value={editNombre}
                         onChange={e => setEditNombre(e.target.value)}
                       />
-                    </div>
-                  ) : (
-                    <span>{c.nombre}</span>
-                  )}
-                </td>
-                {/* Costo/km editable */}
-                <td className="px-4 py-2">
-                  {editingId === c.id ? (
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        step="0.0001"
-                        className="border rounded px-2 py-1 text-xs w-28"
-                        value={editCosto}
-                        onChange={e => setEditCosto(e.target.value)}
-                      />
                       <button onClick={() => handleEditSave(c.id)} className="text-green-600">
                         <Check className="w-4 h-4" />
                       </button>
@@ -202,7 +168,7 @@ export function CorredoresTab() {
                       </button>
                     </div>
                   ) : (
-                    <span className="font-mono">{c.costo_por_km?.toFixed(4) ?? '0.0000'}</span>
+                    <span>{c.nombre}</span>
                   )}
                 </td>
                 {/* Estado */}
@@ -222,7 +188,6 @@ export function CorredoresTab() {
                       onClick={() => {
                         setEditingId(c.id);
                         setEditNombre(c.nombre);
-                        setEditCosto(String(c.costo_por_km ?? 0));
                       }}
                       className="text-navy hover:text-navy-dark"
                       style={{ color: 'var(--navy)' }}

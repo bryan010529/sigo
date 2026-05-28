@@ -20,7 +20,6 @@ export function exportSemanaExcel(
     const sheetRows: unknown[][] = [
       [`Semana ${semana.numero_semana} | Período ${semana.periodo} | ${semana.fecha_inicio} — ${semana.fecha_fin}`],
       [`CORREDOR: ${corredor.codigo} — ${corredor.nombre}`],
-      [`Costo por km: RD$ ${corredor.costo_por_km?.toFixed(4) ?? '0.0000'}`],
       [],
       ['Fecha', 'Kms Prog.', 'Kms Ejec.', 'Kms Efect.', 'Pasajeros', 'Serv. Prog.', 'Serv. Ejec.', 'Serv. Punt.'],
       ...regs.map((r) => [
