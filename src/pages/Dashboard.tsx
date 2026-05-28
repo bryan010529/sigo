@@ -116,9 +116,10 @@ export default function Dashboard() {
             serviciosChart={serviciosChart}
             corredores={corredores}
           />
-          <KpiPanel />
         </>
       )}
+
+      <KpiPanel />
     </div>
   );
 }
