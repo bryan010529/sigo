@@ -117,6 +117,16 @@ function TotalesRow({ totales }: { totales: KpiPeriodoTotales }) {
       </td>
       <td className="px-4 py-2.5 font-mono">{rd(totales.costoProgramado)}</td>
       <td className="px-4 py-2.5 font-mono">{rd(totales.costoEjecutado)}</td>
+      <td className="px-4 py-2.5 font-mono" style={{ color: '#1d9e75' }}>
+        {rd(totales.costoEfectivo)}
+      </td>
+      <td
+        className="px-4 py-2.5 font-mono"
+        style={{ color: (totales.kmsEjecutados - totales.kmsEfectivos) > 0 ? '#d85a30' : '#27ae60' }}
+      >
+        {(totales.kmsEjecutados - totales.kmsEfectivos).toLocaleString('es-DO', { maximumFractionDigits: 2 })} km
+        <span className="block text-[10px] opacity-70">{rd(totales.costoEjecutado - totales.costoEfectivo)}</span>
+      </td>
       <td
         className="px-4 py-2.5 font-mono"
         style={{ color: totales.brechaCosto > 0 ? '#d85a30' : '#27ae60' }}
@@ -161,6 +171,16 @@ function FilaCorredor({ f }: { f: KpiCorredorRow }) {
       </td>
       <td className="px-4 py-2.5 font-mono">{rd(f.costoProgramado)}</td>
       <td className="px-4 py-2.5 font-mono">{rd(f.costoEjecutado)}</td>
+      <td className="px-4 py-2.5 font-mono" style={{ color: '#1d9e75' }}>
+        {rd(f.costoEfectivo)}
+      </td>
+      <td
+        className="px-4 py-2.5 font-mono"
+        style={{ color: (f.kmsEjecutados - f.kmsEfectivos) > 0 ? '#d85a30' : '#27ae60' }}
+      >
+        {(f.kmsEjecutados - f.kmsEfectivos).toLocaleString('es-DO', { maximumFractionDigits: 2 })} km
+        <span className="block text-[10px] opacity-70">{rd(f.costoEjecutado - f.costoEfectivo)}</span>
+      </td>
       <td
         className="px-4 py-2.5 font-mono"
         style={{ color: f.brechaCosto > 0 ? '#d85a30' : '#27ae60' }}
@@ -504,6 +524,8 @@ export function KpiPanel() {
                       '% Aprov.',
                       'Costo Prog.',
                       'Costo Ejec.',
+                      'Costo Efect.',
+                      'Ejec. vs Efect.',
                       'Brecha',
                     ].map((h, i) => (
                       <th
