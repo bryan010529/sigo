@@ -116,7 +116,7 @@ export function CanastaCostoTab() {
 
     setSaving(false);
     if (err) {
-      setFormError(err.includes('unique') || err.includes('duplicate')
+      setFormError(err.includes('23505') || err.includes('unique') || err.includes('duplicate')
         ? 'Ya existe una canasta para ese corredor y año'
         : err);
       return;
@@ -310,10 +310,10 @@ export function CanastaCostoTab() {
                       c.administracion_pct,
                       c.mantenimiento_pct,
                       c.otros_pct,
-                    ].map((pct, i) => (
+                    ].map((valor, i) => (
                       <td key={i} className="px-4 py-2 text-xs text-gray-600 whitespace-nowrap">
-                        {rd(Number(pct))}
-                        <span className="text-gray-400 ml-1">({pct}%)</span>
+                        {rd(Number(valor))}
+                        <span className="text-gray-400 ml-1">({valor}%)</span>
                       </td>
                     ))}
                     <td className="px-4 py-2">
