@@ -195,7 +195,8 @@ export function KpiPanel() {
             label: `S${s.numero_semana} · P${s.periodo} (${s.fecha_inicio} → ${s.fecha_fin})`,
           }))
         );
-      });
+      })
+      .catch(err => console.error('Error cargando semanas:', err));
   }, []);
 
   function handleTipoChange(t: KpiPeriodoTipo) {
