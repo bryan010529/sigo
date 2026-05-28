@@ -434,7 +434,7 @@ export function KpiPanel() {
           </div>
 
           {/* Fila 2: KPIs cruzados */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <KpiCard
               label="% Cumplimiento"
               value={
@@ -464,6 +464,18 @@ export function KpiPanel() {
               }
               sub="efectivo / programado"
               color={pctColor(totales.pctAprovechamiento, 90, 80)}
+            />
+            <KpiCard
+              label="Costo KMs Efectivos"
+              value={rd(totales.costoEfectivo)}
+              sub={`${totales.kmsEfectivos.toLocaleString('es-DO', { maximumFractionDigits: 2 })} km efectivos`}
+              color="#1d9e75"
+            />
+            <KpiCard
+              label="Brecha Ejec. vs Efect."
+              value={`${(totales.kmsEjecutados - totales.kmsEfectivos).toLocaleString('es-DO', { maximumFractionDigits: 2 })} km`}
+              sub={rd(totales.costoEjecutado - totales.costoEfectivo)}
+              color={(totales.kmsEjecutados - totales.kmsEfectivos) > 0 ? '#d85a30' : '#27ae60'}
             />
             <KpiCard
               label="Brecha de Costo"
