@@ -3,16 +3,18 @@ import { useSearchParams } from 'react-router-dom';
 import { UsuariosTab } from '../components/configuracion/UsuariosTab';
 import { CorredoresTab } from '../components/configuracion/CorredoresTab';
 import { AuditoriaTab } from '../components/configuracion/AuditoriaTab';
+import { CanastaCostoTab } from '../components/configuracion/CanastaCostoTab';
 
-type Tab = 'usuarios' | 'corredores' | 'auditoria';
+type Tab = 'usuarios' | 'corredores' | 'canasta' | 'auditoria';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'usuarios', label: 'Usuarios' },
   { id: 'corredores', label: 'Corredores' },
+  { id: 'canasta', label: 'Canasta de Costo' },
   { id: 'auditoria', label: 'Auditoría' },
 ];
 
-const VALID_TABS: Tab[] = ['usuarios', 'corredores', 'auditoria'];
+const VALID_TABS: Tab[] = ['usuarios', 'corredores', 'canasta', 'auditoria'];
 
 export default function Configuracion() {
   const [searchParams] = useSearchParams();
@@ -50,6 +52,7 @@ export default function Configuracion() {
       <div>
         {tab === 'usuarios' && <UsuariosTab />}
         {tab === 'corredores' && <CorredoresTab />}
+        {tab === 'canasta' && <CanastaCostoTab />}
         {tab === 'auditoria' && <AuditoriaTab />}
       </div>
     </div>
